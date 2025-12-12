@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard - Student Score System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+
+        /* Green Theme */
+        .text-theme { color: #198754; }
+        .bg-theme { background-color: #198754; color: white; }
+        .btn-theme { background-color: #198754; color: white; border: none; }
+        .btn-theme:hover { background-color: #157347; color: white; }
+
+        .dashboard-card { border: none; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); height: 100%; background: white; }
+        .dashboard-card .card-header { background: white; border-bottom: 1px solid #f0f0f0; font-weight: bold; padding: 15px 20px; }
+        .progress-thin { height: 10px; border-radius: 5px; background-color: #e9ecef; }
+        .sortable { cursor: pointer; }
+        .sortable:hover { color: #198754; }
+
+        /* Empty State Styling */
+        .empty-state { color: #adb5bd; text-align: center; padding: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex" style="min-height: 100vh;">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <div class="w-100 d-flex flex-column">
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <div class="container-fluid p-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <h3 class="fw-bold text-theme mb-0">Teacher Dashboard</h3>
+                    <p class="text-muted small mb-0">
+                        Current Context:
+                        <span class="fw-bold text-dark" th:text="${selectedClass != null ? selectedClass.className : 'All Classes'}">-</span>
+                        |
+                        <span class="fw-bold text-dark" th:text="${selectedSubject != null ? selectedSubject.subjectName : 'All Subjects'}">-</span>
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#inputGradeModal">
+                        <i class="fas fa-keyboard me-2"></i>Batch Input
+                    </button>
+                    <button class="btn btn-theme">
+                        <i class="fas fa-file-export me-2"></i>Export Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+
+                <div class="col-lg-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="text-theme"><i class="fas fa-chart-pie me-2"></i>Performance Analysis</span>
+                            <form action="/teacher/dashboard" method="get">
+                                <select class="form-select form-select-sm w-auto" name="subjectId" onchange="this.form.submit()">
+                                    <option value="" th:selected="${selectedSubject == null}">-- Select Subject --</option>
+                                    <option th:each="sub : ${subjects}"
+                                            th:value="${sub.id}"
+                                            th:text="${sub.subjectName}"
+                                            th:selected="${selectedSubject != null && selectedSubject.id == sub.id}">
+                                        Subject Name
+                                    </option>
+                                </select>
+                            </form>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${stats != null}">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="fw-bold text-dark">Distinction (>90)</span>
+                                        <span class="text-success fw-bold" th:text="${stats.distinctionRate + '%'}">0%</span>
+                                    </div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-success" role="progressbar"
+                                             th:style="'width: ' + ${stats.distinctionRate} + '%'"></div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="fw-bold text-dark">Excellence (>80)</span>
+                                        <span class="text-info fw-bold" th:text="${stats.excellenceRate + '%'}">0%</span>
+                                    </div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-info" role="progressbar"
+                                             th:style="'width: ' + ${stats.excellenceRate} + '%'"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="fw-bold text-dark">Pass (>60)</span>
+                                        <span class="text-warning fw-bold" th:text="${stats.passRate + '%'}">0%</span>
+                                    </div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-warning" role="progressbar"
+                                             th:style="'width: ' + ${stats.passRate} + '%'"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:unless="${stats != null}" class="empty-state">
+                                <i class="fas fa-chart-area fa-3x mb-3 text-muted"></i>
+                                <p>No statistics available. Please select a subject or input grades.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header">
+                            <span class="text-theme"><i class="fas fa-chart-bar me-2"></i>Score Distribution</span>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${distribution != null and !distribution.isEmpty()}"
+                                 class="d-flex align-items-end justify-content-around h-100 pb-3" style="min-height: 200px;">
+
+                                <div th:each="item : ${distribution}" class="text-center w-100">
+                                    <div class="bg-light mx-auto position-relative rounded" style="height: 150px; width: 40px;">
+                                        <div class="position-absolute bottom-0 w-100 rounded-bottom"
+                                             th:classappend="${item.label == '0-59' ? 'bg-danger' : (item.label == '85-100' ? 'bg-success' : 'bg-primary')}"
+                                             th:style="'height: ' + ${item.percentage} + '%'"
+                                             th:title="${item.count + ' Students'}">
+                                        </div>
+                                    </div>
+                                    <small class="d-block mt-2 text-muted fw-bold" th:text="${item.label}">Range</small>
+                                </div>
+                            </div>
+
+                            <div th:unless="${distribution != null and !distribution.isEmpty()}" class="empty-state pt-5">
+                                <p>Not enough data to generate distribution chart.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header text-success">
+                            <i class="fas fa-trophy me-2"></i>Top High Achievers
+                        </div>
+                        <ul class="list-group list-group-flush" th:if="${topStudents != null and !topStudents.isEmpty()}">
+                            <tr th:each="s, iterStat : ${topStudents}">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <span class="badge me-2"
+                                              th:classappend="${iterStat.count == 1 ? 'bg-warning text-dark' : 'bg-secondary'}"
+                                              th:text="${iterStat.count}">1</span>
+                                        <span th:text="${s.studentName}">Name</span>
+                                    </span>
+                                    <span class="fw-bold text-success" th:text="${s.score}">-</span>
+                                </li>
+                            </tr>
+                        </ul>
+                        <div th:unless="${topStudents != null and !topStudents.isEmpty()}" class="empty-state">
+                            No data available.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>Students Needing Attention
+                        </div>
+                        <ul class="list-group list-group-flush" th:if="${bottomStudents != null and !bottomStudents.isEmpty()}">
+                            <tr th:each="s : ${bottomStudents}">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span th:text="${s.studentName}">Name</span>
+                                    <span class="fw-bold text-danger" th:text="${s.score}">-</span>
+                                </li>
+                            </tr>
+                        </ul>
+                        <div th:unless="${bottomStudents != null and !bottomStudents.isEmpty()}" class="empty-state">
+                            No data available.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-table me-2"></i>Grade Management</h5>
+
+                    <form action="/teacher/dashboard" method="get" class="d-flex" style="width: auto;">
+                        <select class="form-select w-auto me-2" name="classId">
+                            <option value="">All Classes</option>
+                            <option th:each="c : ${classes}"
+                                    th:value="${c.id}"
+                                    th:text="${c.className}"
+                                    th:selected="${selectedClass != null && selectedClass.id == c.id}">Class Name</option>
+                        </select>
+                        <input class="form-control me-2" type="search" name="keyword" placeholder="Search Name/ID" th:value="${keyword}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </form>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="py-3 ps-4">ID</th>
+                                <th class="py-3 sortable">Name (CN)</th>
+                                <th class="py-3">Class</th>
+                                <th class="py-3">Subject</th>
+                                <th class="py-3 sortable">Score</th>
+                                <th class="py-3 text-center">Rank</th>
+                                <th class="py-3 text-end pe-4">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="g : ${grades}">
+                                <td class="ps-4 text-muted" th:text="${g.id}">1</td>
+                                <td class="fw-bold text-dark" th:text="${g.studentName}">-</td>
+                                <td th:text="${g.className}">-</td>
+                                <td th:text="${g.subjectName}">-</td>
+
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${g.score >= 90 ? 'bg-success' : (g.score >= 60 ? 'bg-warning text-dark' : 'bg-danger')}"
+                                          th:text="${g.score}">-</span>
+                                </td>
+
+                                <td class="text-center text-muted">#<span th:text="${g.rank}">-</span></td>
+
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#inputGradeModal"
+                                            th:data-id="${g.id}"
+                                            th:data-score="${g.score}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a th:href="@{/teacher/grades/delete/{id}(id=${g.id})}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Delete this grade?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(grades)}">
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                    No grades found matching your criteria.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="inputGradeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-theme text-white">
+                <h5 class="modal-title fw-bold">Input / Edit Grade</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/teacher/grades/save" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="grade-id"> <div class="mb-3">
+                    <label class="form-label fw-bold">Select Class</label>
+                    <select class="form-select" name="classId" required>
+                        <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.className}">Class Name</option>
+                    </select>
+                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Subject</label>
+                        <select class="form-select" name="subjectId" required>
+                            <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.subjectName}">Subject Name</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Student Name (CN) or ID</label>
+                        <input type="text" name="studentIdentifier" class="form-control" placeholder="Enter Name or ID" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Score (0-100)</label>
+                        <input type="number" name="score" class="form-control" min="0" max="100" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-theme">Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function logout() {
+        window.location.href = '/logout'; // Đơn giản hóa link logout
+    }
+</script>
+</body>
+</html>

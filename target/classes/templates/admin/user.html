@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard - Score Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* --- GREEN THEME (MATCHING ADMIN) --- */
+        .text-theme { color: #198754; }
+        .bg-theme { background-color: #198754; color: white; }
+        .btn-theme { background-color: #198754; color: white; border: none; }
+        .btn-theme:hover { background-color: #157347; color: white; }
+
+        /* Stats Cards Effects */
+        .stats-card { border: none; border-radius: 12px; transition: transform 0.2s; background: white; }
+        .stats-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+        .icon-box { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+        /* Grade Badges */
+        .badge-grade { width: 40px; }
+        .grade-A { background-color: #198754; } /* Green */
+        .grade-B { background-color: #0dcaf0; color: #000; } /* Cyan */
+        .grade-C { background-color: #ffc107; color: #000; } /* Yellow */
+        .grade-D { background-color: #fd7e14; } /* Orange */
+        .grade-F { background-color: #dc3545; } /* Red */
+
+        /* Quick Actions Buttons */
+        .action-btn { height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #e0e0e0; border-radius: 10px; transition: all 0.3s; color: #555; text-decoration: none; }
+        .action-btn:hover { background-color: #e8f5e9; border-color: #198754; color: #198754; }
+        .action-btn i { font-size: 2rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex" style="min-height: 100vh;">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <div class="w-100 d-flex flex-column">
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <div class="container-fluid p-4">
+
+            <div class="card shadow-sm border-0 mb-4 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-8 p-4 d-flex align-items-center">
+                        <img src="https://via.placeholder.com/150" alt="Avatar" class="rounded-circle border border-3 border-success me-4" style="width: 80px; height: 80px;">
+                        <div>
+                            <h3 class="fw-bold mb-1">Hello, <span th:text="${student.name}" class="text-theme">张三</span>! 👋</h3>
+                            <p class="text-muted mb-0">
+                                Student ID: <strong th:text="${student.username}">2023001</strong> |
+                                Class: <strong th:text="${student.className}">计算机科学 1班</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 bg-light p-4 d-flex align-items-center justify-content-center border-start">
+                        <button class="btn btn-outline-success w-75" data-bs-toggle="modal" data-bs-target="#profileModal">
+                            <i class="fas fa-id-card me-2"></i> View Personal Info
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card stats-card shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-success bg-opacity-10 text-success me-3">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">GPA (Average)</h6>
+                                <h2 class="fw-bold mb-0 text-success" th:text="${gpa}">3.8</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card stats-card shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-primary bg-opacity-10 text-primary me-3">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Class Ranking</h6>
+                                <h2 class="fw-bold mb-0 text-primary">
+                                    #<span th:text="${rank}">5</span>
+                                    <span class="fs-6 text-muted fw-normal">/ <span th:text="${totalStudents}">50</span></span>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card stats-card shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-warning bg-opacity-10 text-warning me-3">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Total Credits</h6>
+                                <h2 class="fw-bold mb-0 text-dark" th:text="${totalCredits}">21</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-bottom-0 py-3">
+                            <h5 class="fw-bold mb-0 text-theme"><i class="fas fa-th-large me-2"></i>Student Services</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <a href="#" class="action-btn">
+                                        <i class="fas fa-file-pdf text-danger"></i>
+                                        <span class="fw-bold">Export Transcript</span>
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="#" class="action-btn">
+                                        <i class="fas fa-envelope-open-text text-primary"></i>
+                                        <span class="fw-bold">Appeal Score</span>
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="#" class="action-btn">
+                                        <i class="fas fa-chalkboard-teacher text-warning"></i>
+                                        <span class="fw-bold">Contact Teacher</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-bottom-0 py-3">
+                            <h5 class="fw-bold mb-0 text-theme"><i class="fas fa-chart-pie me-2"></i>Performance</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>Excellent (A/A+)</span>
+                                    <span class="fw-bold">60%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>Good (B/B+)</span>
+                                    <span class="fw-bold">30%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>Average (C)</span>
+                                    <span class="fw-bold">10%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 10%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-theme text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-list-alt me-2"></i>My Academic Transcript</h5>
+                    <span class="badge bg-white text-success bg-opacity-75"><i class="fas fa-check me-1"></i>Finalized</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="py-3 ps-4">Subject Name</th> <th class="py-3 text-center">Credit</th>
+                                <th class="py-3 text-center">Score (100)</th>
+                                <th class="py-3 text-center">Grade</th>
+                                <th class="py-3 text-center">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="s : ${scores}">
+                                <td class="ps-4 fw-bold text-secondary">
+                                    <i class="fas fa-book me-2 text-muted"></i>
+                                    <span th:text="${s.subjectName}">高等数学</span>
+                                </td>
+
+                                <td class="text-center" th:text="${s.credit}">3</td>
+
+                                <td class="text-center fw-bold" th:text="${s.score}">90</td>
+
+                                <td class="text-center">
+                                    <span class="badge badge-grade rounded-pill"
+                                          th:classappend="${s.gradeLetter.startsWith('A')} ? 'grade-A' :
+                                                         (${s.gradeLetter.startsWith('B')} ? 'grade-B' :
+                                                         (${s.gradeLetter.startsWith('C')} ? 'grade-C' :
+                                                         (${s.gradeLetter.startsWith('D')} ? 'grade-D' : 'grade-F')))">
+                                        <span th:text="${s.gradeLetter}">A</span>
+                                    </span>
+                                </td>
+
+                                <td class="text-center">
+                                    <span th:if="${s.score >= 60}" class="text-success fw-bold small"><i class="fas fa-check-circle"></i> Pass</span>
+                                    <span th:if="${s.score < 60}" class="text-danger fw-bold small"><i class="fas fa-times-circle"></i> Fail</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div> <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-theme text-white">
+                <h5 class="modal-title fw-bold">Student Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <img src="https://via.placeholder.com/150" class="rounded-circle border border-3 border-success mb-3" width="100" height="100">
+                    <h4 class="fw-bold mb-0" th:text="${student.name}">张三</h4>
+                    <span class="badge bg-success bg-opacity-10 text-success">Active Student</span>
+                </div>
+
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-4 fw-bold text-secondary">Full Name:</div>
+                            <div class="col-8 fw-bold" th:text="${student.name}">张三</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 fw-bold text-secondary">Student ID:</div>
+                            <div class="col-8" th:text="${student.username}">2023001</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 fw-bold text-secondary">Class:</div>
+                            <div class="col-8" th:text="${student.className}">Software Eng 1</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 fw-bold text-secondary">Email:</div>
+                            <div class="col-8" th:text="${student.email}">student@email.com</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 fw-bold text-secondary">Phone:</div>
+                            <div class="col-8" th:text="${student.phonenumber}">1388888888</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

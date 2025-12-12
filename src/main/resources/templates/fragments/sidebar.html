@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="sidebar" class="d-flex flex-column p-3 text-white bg-dark" style="width: 280px; min-height: 100vh;">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-4 fw-bold">SMS System</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+
+        <li class="nav-item">
+            <a th:href="@{/dashboard}" class="nav-link text-white"
+               th:classappend="${currentPage == 'dashboard'} ? 'active bg-primary' : ''">
+                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN' or session.user.role.roleName == 'TEACHER'}">
+            <a th:href="@{/students}" class="nav-link text-white"
+               th:classappend="${currentPage == 'students'} ? 'active bg-primary' : ''">
+                <i class="fas fa-user-graduate me-2"></i> Students
+            </a>
+        </li>
+
+        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN'}">
+            <a th:href="@{/teachers}" class="nav-link text-white"
+               th:classappend="${currentPage == 'teachers'} ? 'active bg-primary' : ''">
+                <i class="fas fa-chalkboard-teacher me-2"></i> Teachers
+            </a>
+        </li>
+
+        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN'}">
+            <a th:href="@{/courses}" class="nav-link text-white"
+               th:classappend="${currentPage == 'courses'} ? 'active bg-primary' : ''">
+                <i class="fas fa-book me-2"></i> Courses
+            </a>
+        </li>
+
+        <li class="nav-item mt-2">
+            <a th:href="@{/grades}" class="nav-link text-white"
+               th:classappend="${currentPage == 'grades'} ? 'active bg-primary' : ''">
+                <i class="fas fa-chart-bar me-2"></i> Grades
+            </a>
+        </li>
+    </ul>
+    <hr>
+
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://via.placeholder.com/32" alt="" width="32" height="32" class="rounded-circle me-2">
+            <strong th:text="${session.user != null ? session.user.username : 'User'}">User</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="return confirmLogout()">Sign out</a></li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

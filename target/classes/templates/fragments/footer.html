@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="footer" class="container-fluid bg-light border-top py-3 mt-auto">
+    <div class="row">
+        <div class="col-md-6 text-center text-md-start">
+                <span class="text-muted">
+                    &copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span>
+                    School Management System. All rights reserved.
+                </span>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+            <a href="#" class="text-decoration-none text-muted me-3">Privacy Policy</a>
+            <a href="#" class="text-decoration-none text-muted">Terms of Service</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

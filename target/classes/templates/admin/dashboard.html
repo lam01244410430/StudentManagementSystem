@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - SMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background-color: #343a40; color: white; }
+        .nav-link { color: rgba(255,255,255,.75); cursor: pointer; margin-bottom: 5px; }
+        .nav-link:hover, .nav-link.active { color: white; background-color: #495057; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block sidebar p-3">
+            <h4 class="text-center mb-4"><i class="fas fa-shield-alt me-2"></i>Admin</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="switchView('USERS', this)">
+                        <i class="fas fa-users me-2"></i> User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchView('CLASSES', this)">
+                        <i class="fas fa-chalkboard me-2"></i> Class Management
+                    </a>
+                </li>
+            </ul>
+            <div class="mt-5 pt-5 border-top border-secondary">
+                <button onclick="logout()" class="btn btn-outline-light w-100 btn-sm">Logout</button>
+            </div>
+        </nav>
+
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <div id="view-users">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2>User Management</h2>
+                    <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add User</button>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr><th>ID</th><th>Username</th><th>Role</th><th class="text-end">Action</th></tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-classes" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2>Class Management</h2>
+                    <button class="btn btn-success btn-sm"><i class="fas fa-plus"></i> New Class</button>
+                </div>
+                <div id="classCards" class="row g-3">
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    // Security Check
+    const currentUser = {
+        username: [[${#authentication.name}]], // Lấy tên đăng nhập
+        role: { roleName: 'ADMIN' } // Hardcode role vì vào được đây chắc chắn là Admin
+    };
+
+    // View Switching Logic
+    function switchView(viewName, element) {
+        document.getElementById('view-users').style.display = viewName === 'USERS' ? 'block' : 'none';
+        document.getElementById('view-classes').style.display = viewName === 'CLASSES' ? 'block' : 'none';
+
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        if(viewName === 'USERS') loadUsers();
+        if(viewName === 'CLASSES') loadClasses();
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.href = '/login';
+    }
+
+    // Placeholder Load Functions
+    async function loadUsers() {
+        // fetch('/api/users')...
+        document.getElementById('userTableBody').innerHTML = `
+            <tr><td>1</td><td>admin_user</td><td><span class="badge bg-danger">ADMIN</span></td><td class="text-end">...</td></tr>
+            <tr><td>2</td><td>teacher_wang</td><td><span class="badge bg-primary">TEACHER</span></td><td class="text-end">...</td></tr>
+        `;
+    }
+
+    async function loadClasses() {
+        // fetch('/api/classes')...
+        document.getElementById('classCards').innerHTML = `
+            <div class="col-md-4"><div class="card p-3 shadow-sm"><h5>Class 10A</h5></div></div>
+            <div class="col-md-4"><div class="card p-3 shadow-sm"><h5>Class 10B</h5></div></div>
+        `;
+    }
+
+    function logout() {
+        window.location.href = '/logout';
+    }
+
+    // Init
+    loadUsers();
+</script>
+</body>
+</html>
