@@ -39,11 +39,11 @@
     <form action="/perform_login" method="post">
         <div class="mb-3">
             <label class="form-label fw-bold">Username</label>
-            <input type="text" name="username" class="form-control" required placeholder="admin / teacher / student">
+            <input type="text" name="username" class="form-control" required placeholder="Please enter username">
         </div>
         <div class="mb-4">
             <label class="form-label fw-bold">Password</label>
-            <input type="password" name="password" class="form-control" required>
+            <input type="password" name="password" class="form-control" required placeholder="Please enter password">
         </div>
         <button type="submit" class="btn btn-primary w-100 py-2">SIGN IN</button>
     </form>
@@ -85,7 +85,7 @@
     }
 
     if (urlParams.has('logout')) {
-        showToast("Logout Successful! See you again.", "success");
+        showToast("Logout Successful!", "success");
         window.history.replaceState({}, document.title, "/login");
     }
 </script>

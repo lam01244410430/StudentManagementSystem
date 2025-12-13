@@ -1,24 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - SMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
     <style>
         body { background-color: #f8f9fa; }
         .sidebar { min-height: 100vh; background-color: #343a40; color: white; }
         .nav-link { color: rgba(255,255,255,.75); cursor: pointer; margin-bottom: 5px; }
         .nav-link:hover, .nav-link.active { color: white; background-color: #495057; border-radius: 5px; }
+
+        /* --- STYLES CHO MODAL OVERLAY (Lớp phủ) --- */
+        .custom-overlay {
+            display: none; /* Mặc định ẩn */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Màu đen mờ */
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px); /* Hiệu ứng mờ nền sau */
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-overlay.active {
+            display: flex; /* Hiện lên khi có class active */
+        }
+
+        .custom-modal {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            cursor: pointer; font-size: 1.2rem; color: #666;
+            background: none; border: none;
+        }
+        .close-btn:hover { color: #dc3545; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
-        <nav class="col-md-2 d-none d-md-block sidebar p-3">
+        <nav class="col-md-2 d-none d-md-block sidebar p-3 d-flex flex-column">
             <h4 class="text-center mb-4"><i class="fas fa-shield-alt me-2"></i>Admin</h4>
-            <ul class="nav flex-column">
+            <ul class="nav flex-column mb-auto">
                 <li class="nav-item">
                     <a class="nav-link active" onclick="switchView('USERS', this)">
                         <i class="fas fa-users me-2"></i> User Management
@@ -30,89 +72,259 @@
                     </a>
                 </li>
             </ul>
-            <div class="mt-5 pt-5 border-top border-secondary">
-                <button onclick="logout()" class="btn btn-outline-light w-100 btn-sm">Logout</button>
+            <div class="border-top border-secondary pt-3 mt-auto">
+                <button onclick="logout()" class="btn btn-outline-light w-100 btn-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
             </div>
         </nav>
 
-        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-            <div id="view-users">
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                    <h2>User Management</h2>
-                    <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add User</button>
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4 d-flex flex-column" style="min-height: 100vh;">
+            <div class="flex-grow-1">
+
+                <div id="view-users">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h2>User Management</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openModal('add-user')">
+                            <i class="fas fa-plus"></i> Add User
+                        </button>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                <tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="card shadow-sm">
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                            <tr><th>ID</th><th>Username</th><th>Role</th><th class="text-end">Action</th></tr>
-                            </thead>
-                            <tbody id="userTableBody">
-                            </tbody>
-                        </table>
+
+                <div id="view-classes" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h2>Class Management</h2>
+                        <button class="btn btn-success btn-sm" onclick="openModal('new-class')">
+                            <i class="fas fa-plus"></i> New Class
+                        </button>
+                    </div>
+                    <div id="classCards" class="row g-3">
+                        <div class="col-12 text-center py-4">Loading classes...</div>
                     </div>
                 </div>
             </div>
 
-            <div id="view-classes" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                    <h2>Class Management</h2>
-                    <button class="btn btn-success btn-sm"><i class="fas fa-plus"></i> New Class</button>
+            <footer th:replace="~{fragments/footer :: footer}">
+                <div class="dashboard-footer">
+                    <small>&copy; 2025 SMS Backup Footer.</small>
                 </div>
-                <div id="classCards" class="row g-3">
-                </div>
-            </div>
+            </footer>
         </main>
     </div>
 </div>
 
-<script>
-    // Security Check
-    const currentUser = {
-        username: [[${#authentication.name}]], // Lấy tên đăng nhập
-        role: { roleName: 'ADMIN' } // Hardcode role vì vào được đây chắc chắn là Admin
+<div id="modal-add-user" class="custom-overlay">
+    <div class="custom-modal">
+        <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <h4 class="mb-4 text-primary"><i class="fas fa-user-plus me-2"></i>Add New User</h4>
+        <form onsubmit="event.preventDefault(); alert('Submit User logic here!'); closeModal();">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select class="form-select">
+                    <option value="STUDENT">Student</option>
+                    <option value="TEACHER">Teacher</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Save User</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-new-class" class="custom-overlay">
+    <div class="custom-modal">
+        <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <h4 class="mb-4 text-success"><i class="fas fa-chalkboard me-2"></i>Create New Class</h4>
+        <form onsubmit="event.preventDefault(); alert('Submit Class logic here!'); closeModal();">
+            <div class="mb-3">
+                <label class="form-label">Class Name</label>
+                <input type="text" class="form-control" required placeholder="Ex: Software Engineering">
+            </div>
+            <button type="submit" class="btn btn-success w-100">Create Class</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script th:inline="javascript">
+    const API_BASE = "http://localhost:8080/api";
+
+    // --- 1. ROUTING & MODAL LOGIC ---
+
+    function openModal(type) {
+        // Cập nhật URL trình duyệt mà không reload (History API)
+        const newUrl = window.location.pathname + '?action=' + type;
+        window.history.pushState({ action: type }, '', newUrl);
+
+        // Hiển thị modal tương ứng
+        if(type === 'add-user') {
+            document.getElementById('modal-add-user').classList.add('active');
+        } else if (type === 'new-class') {
+            document.getElementById('modal-new-class').classList.add('active');
+        }
+    }
+
+    function closeModal() {
+        // Reset URL về sạch
+        const cleanUrl = window.location.pathname;
+        window.history.pushState({ action: null }, '', cleanUrl);
+
+        // Ẩn tất cả overlay
+        document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active'));
+    }
+
+    // Xử lý nút Back trên trình duyệt để đóng modal thay vì back trang
+    window.onpopstate = function(event) {
+        document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active'));
     };
 
-    // View Switching Logic
+    // Kiểm tra URL khi load trang (nếu người dùng F5 tại link ?action=add-user)
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        if (action === 'add-user') document.getElementById('modal-add-user').classList.add('active');
+        if (action === 'new-class') document.getElementById('modal-new-class').classList.add('active');
+
+        loadUsers(); // Load data mặc định
+    }
+
+    // --- 2. VIEW SWITCHING ---
     function switchView(viewName, element) {
         document.getElementById('view-users').style.display = viewName === 'USERS' ? 'block' : 'none';
         document.getElementById('view-classes').style.display = viewName === 'CLASSES' ? 'block' : 'none';
 
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        if(element) element.classList.add('active');
+        if(element) {
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
 
         if(viewName === 'USERS') loadUsers();
         if(viewName === 'CLASSES') loadClasses();
     }
 
-    function logout() {
-        localStorage.removeItem('currentUser');
-        window.location.href = '/login';
-    }
+    // --- 3. DATA LOADING & NO DATA HANDLING ---
 
-    // Placeholder Load Functions
     async function loadUsers() {
-        // fetch('/api/users')...
-        document.getElementById('userTableBody').innerHTML = `
-            <tr><td>1</td><td>admin_user</td><td><span class="badge bg-danger">ADMIN</span></td><td class="text-end">...</td></tr>
-            <tr><td>2</td><td>teacher_wang</td><td><span class="badge bg-primary">TEACHER</span></td><td class="text-end">...</td></tr>
-        `;
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>';
+
+        try {
+            const res = await fetch(`${API_BASE}/users`);
+            if (!res.ok) throw new Error("Failed");
+            const users = await res.json();
+
+            // [NO DATA DISPLAY]
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-folder-open fa-3x mb-3 text-secondary opacity-50"></i>
+                            <h5>No Data Available</h5>
+                            <p class="small">There are currently no users in the system.</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>#${u.userId}</td>
+                    <td class="fw-bold">${u.username}</td>
+                    <td>${getRoleBadge(u.role ? u.role.roleName : 'UNKNOWN')}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-warning me-2" onclick="editUser(${u.userId})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${u.userId})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error loading users.</td></tr>';
+        }
     }
 
     async function loadClasses() {
-        // fetch('/api/classes')...
-        document.getElementById('classCards').innerHTML = `
-            <div class="col-md-4"><div class="card p-3 shadow-sm"><h5>Class 10A</h5></div></div>
-            <div class="col-md-4"><div class="card p-3 shadow-sm"><h5>Class 10B</h5></div></div>
-        `;
+        const container = document.getElementById('classCards');
+        container.innerHTML = '<div class="col-12 text-center py-4">Loading...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/classes`);
+            if (!res.ok) throw new Error("Failed");
+            const classes = await res.json();
+
+            // [NO DATA DISPLAY]
+            if (!classes || classes.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary opacity-50"></i>
+                        <h5>No Classes Found</h5>
+                        <p class="small">Click "New Class" to create one.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = classes.map(c => `
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body text-center">
+                            <div class="mb-3 text-primary"><i class="fas fa-chalkboard fa-3x"></i></div>
+                            <h5 class="card-title fw-bold">${c.className}</h5>
+                            <p class="text-muted small">ID: ${c.classId}</p>
+                            <button class="btn btn-sm btn-light mt-2 w-100">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            container.innerHTML = '<div class="col-12 text-center text-danger">Error loading classes.</div>';
+        }
     }
 
-    function logout() {
-        window.location.href = '/logout';
+    // --- 4. ACTIONS & UTILS ---
+
+    async function deleteUser(userId) {
+        if (!confirm("Delete this user?")) return;
+        try {
+            const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast("Deleted successfully", "success");
+                loadUsers();
+            } else showToast("Failed to delete", "error");
+        } catch (e) { showToast("Server error", "error"); }
     }
 
-    // Init
-    loadUsers();
+    function editUser(id) { alert("Edit feature pending for ID: " + id); }
+    function logout() { window.location.href = '/logout'; }
+
+    function getRoleBadge(role) {
+        const map = { 'ADMIN': 'danger', 'TEACHER': 'primary', 'STUDENT': 'success' };
+        return `<span class="badge bg-${map[role] || 'secondary'}">${role}</span>`;
+    }
+
+    function showToast(msg, type) {
+        let bg = type === 'success' ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff5f6d, #ffc371)";
+        Toastify({ text: msg, duration: 3000, close: true, gravity: "top", position: "right", style: { background: bg } }).showToast();
+    }
 </script>
 </body>
 </html>
