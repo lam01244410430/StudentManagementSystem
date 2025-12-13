@@ -24,6 +24,7 @@ public class StudentController {
     @Autowired private StudentRepository studentRepository;
     @Autowired private ScoreRepository scoreRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private CourseRepository courseRepo;
 
     // View HTML
     @GetMapping("/student/dashboard")
@@ -43,19 +44,21 @@ public class StudentController {
     @ResponseBody
     @GetMapping("/api/students/by-user/{userId}")
     public Student getStudentByUserId(@PathVariable Long userId) {
+        // --- ĐÃ SỬA ---
+        // Không dùng findById(userId) vì userId khác studentId.
+        // Phải dùng method findByUser_UserId mà ta vừa thêm vào Repository.
         return studentRepository.findByUser_UserId(userId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("Student not found for this User ID"));
     }
 
     // API: Lấy bảng điểm của Student (để JS gọi)
     @ResponseBody
     @GetMapping("/api/scores/student/{studentId}")
-    public List<Score> getStudentScores(@PathVariable String studentId) {
+    public List<Score> getStudentScores(@PathVariable String studentId) { // Đổi Long -> String
         return scoreRepository.findByStudent_StudentId(studentId);
     }
 
-    // API: Lấy danh sách môn học (để hiển thị cả môn chưa có điểm)
-    @Autowired private CourseRepository courseRepo;
+    // API: Lấy danh sách môn học
     @ResponseBody
     @GetMapping("/api/courses")
     public List<Course> getAllCourses() {

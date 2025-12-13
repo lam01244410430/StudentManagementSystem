@@ -1,93 +1,89 @@
 package com.stu.app.controller;
 
-import com.stu.app.dto.CourseStatsDTO;
-import com.stu.app.model.Course;
-import com.stu.app.model.SchoolClass;
-import com.stu.app.model.Score;
-import com.stu.app.repository.CourseRepository;
-import com.stu.app.repository.SchoolClassRepository;
-import com.stu.app.repository.ScoreRepository;
-import com.stu.app.service.ScoreService;
+import com.stu.app.dto.GradeDTO;
+import com.stu.app.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class TeacherController {
 
-    @Autowired private SchoolClassRepository classRepository;
-    @Autowired private CourseRepository courseRepository;
-    @Autowired private ScoreService scoreService;
-    @Autowired private ScoreRepository scoreRepository; // Dùng tạm repo để tìm nhanh
+    @Autowired
+    private TeacherService teacherService;
 
+    // 1. Route chính cho Dashboard
     @GetMapping("/teacher/dashboard")
     public String dashboard(
-            Model model,
             @RequestParam(required = false) Long classId,
-            @RequestParam(required = false) Long subjectId
-    ) {
-        // 1. Load danh sách bộ lọc
-        List<SchoolClass> classes = classRepository.findAll();
-        List<Course> subjects = courseRepository.findAll();
-        model.addAttribute("classes", classes);
-        model.addAttribute("subjects", subjects);
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) String keyword,
+            Model model) {
 
-        // 2. Xử lý lựa chọn hiện tại
-        if (classId != null) {
-            model.addAttribute("selectedClass", classRepository.findById(classId).orElse(null));
-        }
-        if (subjectId != null) {
-            Course subject = courseRepository.findById(subjectId).orElse(null);
-            model.addAttribute("selectedSubject", subject);
+        // Load dữ liệu Classes và Subjects cho Dropdown
+        model.addAttribute("classes", teacherService.getAllClasses());
+        model.addAttribute("subjects", teacherService.getAllCourses());
 
-            // 3. Tính toán thống kê NẾU đã chọn môn
-            if (subject != null) {
-                CourseStatsDTO stats = scoreService.calculateCourseStats(subjectId, subject.getCourseName());
-                model.addAttribute("stats", stats);
+        // Giữ lại trạng thái filter đã chọn để hiển thị trên View
+        model.addAttribute("selectedClassId", classId);
+        model.addAttribute("selectedSubjectId", subjectId);
+        model.addAttribute("keyword", keyword);
 
-                // Biểu đồ phân phối điểm
-                Map<String, Integer> distributionRaw = scoreService.getScoreDistribution(subjectId);
-                // Convert map sang List object để Thymeleaf dễ duyệt
-                List<Map<String, Object>> distList = new ArrayList<>();
-                distributionRaw.forEach((k, v) -> distList.add(Map.of("label", k, "count", v, "percentage", (v * 10)))); // % giả định để vẽ cột
-                model.addAttribute("distribution", distList);
-            }
-        }
+        // Lấy danh sách điểm (Nếu classId, subjectId là null -> Lấy tất cả)
+        List<GradeDTO> grades = teacherService.getGrades(classId, subjectId, keyword);
+        model.addAttribute("grades", grades);
 
-        // 4. Danh sách bảng điểm (Grades Table)
-        if (classId != null && subjectId != null) {
-            List<Score> scores = scoreService.getScoresByClassAndCourse(classId, subjectId);
-            model.addAttribute("grades", scores);
+        // Tính toán Thống kê (4 ô vuông)
+        Map<String, Object> stats = teacherService.calculateStats(grades);
+        model.addAttribute("stats", stats);
 
-            // Top students logic đơn giản (Lấy 3 người điểm cao nhất)
-            model.addAttribute("topStudents", scores.stream()
-                    .sorted((s1, s2) -> Double.compare(s2.getScoreValue(), s1.getScoreValue()))
-                    .limit(3).toList());
-        } else {
-            model.addAttribute("grades", new ArrayList<>());
+        // Tính toán Biểu đồ
+        model.addAttribute("distribution", teacherService.getDistribution(grades));
+
+        // Tính toán Top/Bottom students (Lấy 5 người đầu và 5 người cuối)
+        if (!grades.isEmpty()) {
+            model.addAttribute("topStudents", grades.stream().limit(5).collect(Collectors.toList()));
+            // Lấy những người điểm thấp (đảo ngược list hoặc lấy đuôi)
+            List<GradeDTO> bottom = grades.stream()
+                    .sorted((g1, g2) -> Double.compare(g1.getScore(), g2.getScore())) // Sắp xếp tăng dần để lấy thấp nhất
+                    .limit(5)
+                    .collect(Collectors.toList());
+            model.addAttribute("bottomStudents", bottom);
         }
 
-        model.addAttribute("currentPage", "dashboard");
-        return "teacher/dashboard"; // templates/teacher/dashboard.html
+        return "teacher/dashboard"; // Trả về file HTML của bạn
     }
 
-    // API Lưu điểm từ Modal nhập liệu
+    // 2. Route xử lý yêu cầu "/grades" -> Redirect về dashboard
+    @GetMapping("/grades")
+    public String redirectToDashboard() {
+        return "redirect:/teacher/dashboard";
+    }
+
+    // 3. API lưu điểm (Single Input)
     @PostMapping("/teacher/grades/save")
     public String saveGrade(
+            @RequestParam(required = false) Long id,
             @RequestParam Long classId,
             @RequestParam Long subjectId,
-            @RequestParam String studentIdentifier, // ID hoặc Tên
-            @RequestParam Double score
-    ) {
-        // Logic tìm Student và Save Score (Sẽ cần hoàn thiện tìm kiếm chính xác)
-        // Đây là demo redirect lại trang dashboard
+            @RequestParam String studentIdentifier, // Student ID dạng String
+            @RequestParam Double score) {
+
+        teacherService.saveScore(id, subjectId, studentIdentifier, score);
+
+        // Redirect lại trang dashboard kèm filter class cũ để tiện nhập tiếp
         return "redirect:/teacher/dashboard?classId=" + classId + "&subjectId=" + subjectId;
+    }
+
+    // 4. API Xóa điểm
+    @GetMapping("/teacher/grades/delete/{id}")
+    public String deleteGrade(@PathVariable Long id) {
+        teacherService.deleteScore(id);
+        return "redirect:/teacher/dashboard";
     }
 }

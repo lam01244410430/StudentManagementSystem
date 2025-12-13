@@ -51,8 +51,10 @@
             width: 100%; max-width: 500px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.3);
             position: relative; animation: slideDown 0.3s ease-out;
-            max-height: 90vh; overflow-y: auto; /* Scroll nếu modal dài */
+            max-height: 90vh; overflow-y: auto;
         }
+        .custom-modal.large { max-width: 800px; } /* Modal to hơn cho Class Details */
+
         @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; border: none; background: none; font-size: 1.2rem; }
 
@@ -60,6 +62,9 @@
         .pagination-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .empty-state { text-align: center; padding: 60px 0; color: #6c757d; }
         .empty-state i { font-size: 3.5rem; margin-bottom: 15px; opacity: 0.3; }
+
+        /* Card Class Actions */
+        .class-actions { position: absolute; top: 10px; right: 10px; }
     </style>
 </head>
 <body>
@@ -106,7 +111,6 @@
                         <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 50px;">No.</th>
-                            <th>DB ID</th>
                             <th>Username</th>
                             <th>Full Name</th>
                             <th>Role</th>
@@ -131,7 +135,7 @@
         <div id="view-classes" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-primary fw-bold"><i class="fas fa-chalkboard me-2"></i>Class Management</h2>
-                <button class="btn btn-primary" onclick="alert('Open Class Modal')">
+                <button class="btn btn-primary" onclick="openNewClassModal()">
                     <i class="fas fa-plus me-2"></i> New Class
                 </button>
             </div>
@@ -152,23 +156,15 @@
 
         <form id="userForm" onsubmit="handleUserSubmit(event)">
             <input type="hidden" id="userIdHidden">
-
             <div class="mb-3">
                 <label class="form-label">Username <span class="text-danger">*</span></label>
                 <input type="text" id="inputUsername" class="form-control" required placeholder="Login username">
             </div>
-
             <div class="mb-3" id="passwordContainer">
                 <label class="form-label">Password <span class="text-danger">*</span></label>
                 <input type="password" id="inputPassword" class="form-control" placeholder="Login password">
-                <small class="text-muted" id="passwordHint" style="display:none;">Leave blank to keep current password (Edit mode)</small>
+                <small class="text-muted" id="passwordHint" style="display:none;">Leave blank to keep current</small>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                <input type="text" id="inputFullname" class="form-control" required placeholder="User's real name">
-            </div>
-
             <div class="mb-3">
                 <label class="form-label">Role <span class="text-danger">*</span></label>
                 <select id="inputRole" class="form-select" onchange="toggleStudentFields()">
@@ -177,22 +173,77 @@
                     <option value="STUDENT">Student</option>
                 </select>
             </div>
-
             <div id="studentExtraFields" class="p-3 bg-light rounded mb-3 border" style="display: none;">
-                <h6 class="text-primary mb-3"><i class="fas fa-user-graduate me-2"></i>Student Assignment</h6>
-                <div class="mb-0">
-                    <label class="form-label">Assign to Class <span class="text-danger">*</span></label>
+                <h6 class="text-primary mb-3"><i class="fas fa-user-graduate me-2"></i>Student Details</h6>
+                <div class="mb-3">
+                    <label class="form-label">Full Name<span class="text-danger">*</span></label>
+                    <input type="text" id="inputFullname" class="form-control" placeholder="Student's real name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Class Assignment <span class="text-danger">*</span></label>
                     <select id="inputClassId" class="form-select">
-                        <option value="">-- Select a Class --</option>
+                        <option value="">-- Select Class --</option>
                     </select>
-                    <div class="form-text">Students must be assigned to a class immediately.</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender</label>
+                        <select id="inputGender" class="form-select">
+                            <option value="男">男 (Male)</option>
+                            <option value="女">女 (Female)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Birth Date</label>
+                        <input type="date" id="inputBirth" class="form-control">
+                    </div>
                 </div>
             </div>
-
             <button type="submit" class="btn btn-primary w-100" id="btnSaveUser">
                 <i class="fas fa-save me-2"></i> Save Changes
             </button>
         </form>
+    </div>
+</div>
+
+<div id="modal-new-class" class="custom-overlay">
+    <div class="custom-modal">
+        <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <h4 class="mb-4 text-primary"><i class="fas fa-chalkboard me-2"></i>Create New Class</h4>
+        <form onsubmit="handleCreateClass(event)">
+            <div class="mb-3">
+                <label class="form-label">Select Grade Level</label>
+                <select id="inputGradeLevel" class="form-select" required>
+                    <option value="高一">高一 (Grade 10)</option>
+                    <option value="高二">高二 (Grade 11)</option>
+                    <option value="高三">高三 (Grade 12)</option>
+                </select>
+                <div class="form-text text-muted">
+                    System will automatically assign the next class number (e.g., 高一(3)).
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Auto Create Class</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-class-details" class="custom-overlay">
+    <div class="custom-modal large"> <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <h4 class="mb-3 text-primary" id="classDetailTitle">Class Details</h4>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered">
+                <thead class="table-light">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Birth Date</th>
+                </tr>
+                </thead>
+                <tbody id="classStudentsTableBody">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -202,22 +253,18 @@
     /* --- CONFIG & STATE --- */
     const API_BASE = "http://localhost:8080/api";
     let allUsers = [];
-    let allClasses = []; // Lưu danh sách lớp để dùng cho Dropdown
+    let allClasses = [];
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
 
     // --- 1. INITIALIZATION ---
     window.onload = function() {
         loadUsers();
-        loadClasses(); // Load lớp ngay từ đầu để sẵn sàng hiển thị
+        loadClasses();
     }
 
     // --- 2. DATA LOADING ---
-
     async function loadUsers() {
-        const tbody = document.getElementById('userTableBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading data...</td></tr>';
-
         try {
             const res = await fetch(`${API_BASE}/users`);
             if (!res.ok) throw new Error("Fetch failed");
@@ -225,7 +272,8 @@
             currentPage = 1;
             renderUserTable();
         } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Failed to connect API.</td></tr>';
+            console.warn("API Error (Users):", error);
+            allUsers = []; renderUserTable();
         }
     }
 
@@ -234,31 +282,21 @@
             const res = await fetch(`${API_BASE}/classes`);
             if (!res.ok) throw new Error("Fetch failed");
             allClasses = await res.json();
-            renderClassView(); // Render view lớp học
+            renderClassView();
         } catch (error) {
-            console.error("Failed to load classes");
+            console.warn("API Error (Classes):", error);
+            allClasses = []; renderClassView();
         }
     }
 
     // --- 3. RENDERING UI ---
-
     function renderUserTable() {
         const tbody = document.getElementById('userTableBody');
         const pagination = document.getElementById('paginationControls');
         tbody.innerHTML = "";
 
-        // EMPTY STATE CHO USER
         if (!allUsers || allUsers.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6">
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <h5>No User Data</h5>
-                            <p class="small">Click "Add User" to create a new account.</p>
-                        </div>
-                    </td>
-                </tr>`;
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-folder-open"></i><h5>No User Data</h5></div></td></tr>`;
             pagination.style.display = 'none';
             return;
         }
@@ -271,13 +309,12 @@
         pageData.forEach((u, index) => {
             const stt = start + index + 1;
             const roleName = u.role ? u.role.roleName : 'UNKNOWN';
-
+            // Không hiện DB ID, FullName rỗng thì để trống
             const row = `
                 <tr>
                     <td class="ps-4 fw-bold text-secondary">${stt}</td>
-                    <td class="text-muted"><small>#${u.userId}</small></td>
                     <td class="fw-bold text-primary">${u.username}</td>
-                    <td>${u.fullName || '<i class="text-muted">Not set</i>'}</td>
+                    <td>${u.fullName || ''}</td>
                     <td>${getRoleBadge(roleName)}</td>
                     <td class="text-end pe-4">
                         <button class="btn btn-sm btn-light text-primary border me-2" onclick="openEditUser(${u.userId})"><i class="fas fa-pen"></i></button>
@@ -286,7 +323,6 @@
                 </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
-
         updatePaginationInfo(allUsers.length);
     }
 
@@ -294,56 +330,170 @@
         const container = document.getElementById('classCards');
         container.innerHTML = "";
 
-        // EMPTY STATE CHO CLASS (Đồng bộ icon)
         if (!allClasses || allClasses.length === 0) {
-            container.innerHTML = `
-                <div class="col-12">
-                    <div class="empty-state">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <h5>No Classes Found</h5>
-                        <p class="small">Start by creating a new class.</p>
-                    </div>
-                </div>`;
+            container.innerHTML = `<div class="col-12"><div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><h5>No Classes Found</h5></div></div>`;
             return;
         }
 
         container.innerHTML = allClasses.map(c => `
             <div class="col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body text-center">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                     <div class="class-actions">
+                        <button class="btn btn-sm btn-link text-danger" onclick="deleteClass(${c.classId})" title="Delete Class"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="card-body text-center mt-3">
                         <div class="mb-3 text-primary"><i class="fas fa-chalkboard fa-3x"></i></div>
                         <h5 class="card-title fw-bold">${c.className}</h5>
                         <p class="text-muted small">ID: ${c.classId}</p>
-                        <button class="btn btn-sm btn-outline-primary mt-2 w-100">View Details</button>
+                        <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="openClassDetails(${c.classId}, '${c.className}')">
+                            <i class="fas fa-list me-1"></i> View Students
+                        </button>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
-    // --- 4. MODAL & FORM LOGIC ---
+    // --- 4. NEW CLASS LOGIC (AUTO INCREMENT) ---
+    function openNewClassModal() {
+        document.getElementById('inputGradeLevel').value = "高一";
+        document.getElementById('modal-new-class').classList.add('active');
+    }
 
+    async function handleCreateClass(e) {
+        e.preventDefault();
+        const gradeBase = document.getElementById('inputGradeLevel').value; // ex: 高一
+
+        // 1. Filter existing classes of this grade to find max number
+        // Assuming format is Name(N) like 高一(1), 高一(2)
+        let maxNum = 0;
+        const regex = new RegExp(`^${gradeBase}\\((\\d+)\\)$`);
+
+        allClasses.forEach(c => {
+            const match = c.className.match(regex);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > maxNum) maxNum = num;
+            }
+        });
+
+        const nextNum = maxNum + 1;
+        const newClassName = `${gradeBase}(${nextNum})`;
+
+        // 2. Send API Request
+        try {
+            const res = await fetch(`${API_BASE}/classes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ className: newClassName })
+            });
+
+            if (res.ok) {
+                showToast(`Created ${newClassName} successfully!`, "success");
+                closeModal();
+                loadClasses();
+            } else {
+                showToast("Failed to create class", "error");
+            }
+        } catch (err) {
+            showToast("Server error", "error");
+        }
+    }
+
+    async function deleteClass(id) {
+        // Cảnh báo người dùng rõ ràng hơn
+        if(!confirm("Cảnh báo: Hành động này sẽ xóa lớp học.\nNếu Database chưa cấu hình 'Cascade', bạn phải gỡ hết học sinh khỏi lớp này trước.\nBạn có chắc chắn muốn xóa?")) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/classes/${id}`, { method: 'DELETE' });
+
+            if(res.ok) {
+                showToast("Đã xóa lớp học thành công!", "success");
+                loadClasses();
+                // Cập nhật lại list user để đồng bộ dữ liệu nếu cần
+                loadUsers();
+            } else {
+                // Đọc lỗi từ server trả về (nếu có)
+                const errorData = await res.json().catch(() => ({}));
+                console.error(errorData);
+
+                if (res.status === 500) {
+                     showToast("Không thể xóa: Lớp học này đang có học sinh!", "error");
+                } else {
+                     showToast("Lỗi khi xóa lớp học (Code: " + res.status + ")", "error");
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("Lỗi kết nối Server", "error");
+        }
+    }
+
+    // --- 5. CLASS DETAILS LOGIC (VIEW STUDENTS FROM DB) ---
+    async function openClassDetails(classId, className) {
+        // Cập nhật tiêu đề Modal
+        document.getElementById('classDetailTitle').innerText = `Students in ${className}`;
+
+        // Hiển thị Modal
+        document.getElementById('modal-class-details').classList.add('active');
+
+        // Hiển thị loading
+        const tbody = document.getElementById('classStudentsTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><br>Loading data from database...</td></tr>';
+
+        try {
+            // Gọi API lấy học sinh theo classId
+            const res = await fetch(`${API_BASE}/classes/${classId}/students`);
+
+            if (!res.ok) throw new Error("Failed to fetch class students");
+
+            const students = await res.json();
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No students found in this class.</td></tr>';
+                return;
+            }
+
+            // Render dữ liệu
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td>${s.userId}</td>
+                    <td class="fw-bold">${s.fullName || '---'}</td>
+                    <td>${s.gender || '-'}</td>
+                    <td>${s.birth || '-'}</td>
+                </tr>
+            `).join('');
+
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Error loading data.</td></tr>';
+        }
+    }
+
+    // --- 6. USER MODAL LOGIC ---
     function toggleStudentFields() {
         const role = document.getElementById('inputRole').value;
         const studentFields = document.getElementById('studentExtraFields');
         const classSelect = document.getElementById('inputClassId');
+        const fullNameInput = document.getElementById('inputFullname');
 
         if (role === 'STUDENT') {
             studentFields.style.display = 'block';
-            classSelect.required = true; // Bắt buộc chọn lớp
-            populateClassDropdown(); // Nạp dữ liệu vào dropdown
+            classSelect.required = true;
+            fullNameInput.required = true;
+            populateClassDropdown();
         } else {
             studentFields.style.display = 'none';
             classSelect.required = false;
             classSelect.value = "";
+            fullNameInput.required = false;
+            fullNameInput.value = "";
         }
     }
 
     function populateClassDropdown() {
         const select = document.getElementById('inputClassId');
-        // Giữ lại option đầu tiên (-- Select --)
         select.innerHTML = '<option value="">-- Select a Class --</option>';
-
         allClasses.forEach(c => {
             const option = document.createElement('option');
             option.value = c.classId;
@@ -356,12 +506,9 @@
         document.getElementById('modalUserTitle').innerText = "Add New User";
         document.getElementById('userIdHidden').value = "";
         document.getElementById('userForm').reset();
-
-        // Mặc định Password required khi tạo mới
         document.getElementById('inputPassword').required = true;
         document.getElementById('passwordHint').style.display = 'none';
-
-        toggleStudentFields(); // Reset trạng thái field
+        toggleStudentFields();
         document.getElementById('modal-user').classList.add('active');
     }
 
@@ -374,51 +521,55 @@
         document.getElementById('inputUsername').value = user.username;
         document.getElementById('inputFullname').value = user.fullName || "";
 
-        // Khi edit, password không bắt buộc (để trống nghĩa là không đổi)
+        // Password không bắt buộc khi Edit
         document.getElementById('inputPassword').required = false;
         document.getElementById('passwordHint').style.display = 'block';
 
         const role = user.role ? user.role.roleName : "STUDENT";
         document.getElementById('inputRole').value = role;
 
-        toggleStudentFields(); // Hiển thị field class nếu là student
+        toggleStudentFields(); // Hiển thị/Ẩn các trường thông tin học sinh
 
-        // Nếu là student, set giá trị lớp hiện tại (giả định backend trả về object class trong user)
-        if(role === 'STUDENT' && user.assignedClass) {
-             document.getElementById('inputClassId').value = user.assignedClass.classId;
+        if(role === 'STUDENT') {
+             // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+             if(user.schoolClass) {
+                 document.getElementById('inputClassId').value = user.schoolClass.classId;
+             }
+
+             if(user.gender) document.getElementById('inputGender').value = user.gender;
+             if(user.birth) document.getElementById('inputBirth').value = user.birth;
         }
-
         document.getElementById('modal-user').classList.add('active');
     }
 
     async function handleUserSubmit(e) {
         e.preventDefault();
-
         const id = document.getElementById('userIdHidden').value;
         const roleName = document.getElementById('inputRole').value;
         const classId = document.getElementById('inputClassId').value;
+        const fullName = document.getElementById('inputFullname').value;
 
-        // Chuẩn bị payload
         const payload = {
             username: document.getElementById('inputUsername').value,
-            fullName: document.getElementById('inputFullname').value,
             role: { roleName: roleName }
         };
 
-        // Xử lý password (chỉ gửi nếu người dùng nhập)
         const password = document.getElementById('inputPassword').value;
-        if (password) {
-            payload.password = password;
-        }
+        if (password) payload.password = password;
 
-        // Xử lý class nếu là Student
         if (roleName === 'STUDENT') {
-            if (!classId) {
-                showToast("Please select a class for the student!", "error");
-                return;
-            }
-            // Gửi classId lên backend (cấu trúc tùy thuộc backend của bạn)
-            payload.assignedClass = { classId: parseInt(classId) };
+            if (!classId) { showToast("Please select a class!", "error"); return; }
+            if (!fullName) { showToast("Student Name is required!", "error"); return; }
+
+            payload.fullName = fullName;
+
+            // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+            payload.schoolClass = { classId: parseInt(classId) };
+
+            payload.gender = document.getElementById('inputGender').value;
+            payload.birth = document.getElementById('inputBirth').value;
+        } else {
+            payload.fullName = null;
         }
 
         const method = id ? 'PUT' : 'POST';
@@ -432,58 +583,52 @@
             });
 
             if (res.ok) {
-                showToast(id ? "User updated!" : "User created successfully!", "success");
+                showToast(id ? "Updated!" : "Created successfully!", "success");
                 closeModal();
-                loadUsers();
+                loadUsers(); // Tải lại danh sách user
             } else {
-                showToast("Action failed! Check inputs.", "error");
+                showToast("Action failed!", "error");
             }
         } catch (err) {
-            showToast("Server connection error", "error");
+            console.error(err);
+            showToast("Server error", "error");
         }
     }
 
     // --- OTHER UTILS ---
     function closeModal() { document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active')); }
-
     function deleteUser(id) {
-        if (!confirm("Are you sure? This action cannot be undone.")) return;
+        if (!confirm("Are you sure?")) return;
         fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })
             .then(res => {
                 if(res.ok) { showToast("Deleted!", "success"); allUsers = allUsers.filter(u => u.userId !== id); renderUserTable(); }
-                else showToast("Delete failed", "error");
-            });
+                else showToast("Failed", "error");
+            }).catch(() => showToast("Server error", "error"));
     }
-
-    function updatePaginationInfo(totalItems) {
+    function updatePaginationInfo(total) {
         const start = (currentPage - 1) * ITEMS_PER_PAGE + 1;
         let end = currentPage * ITEMS_PER_PAGE;
-        if (end > totalItems) end = totalItems;
-        document.getElementById('pageInfo').innerText = `Showing ${start}-${end} of ${totalItems} users`;
+        if (end > total) end = total;
+        document.getElementById('pageInfo').innerText = `Showing ${start}-${end} of ${total} users`;
         document.getElementById('btnPrev').disabled = (currentPage === 1);
-        document.getElementById('btnNext').disabled = (end >= totalItems);
+        document.getElementById('btnNext').disabled = (end >= total);
     }
-
     function prevPage() { if (currentPage > 1) { currentPage--; renderUserTable(); } }
     function nextPage() { if ((currentPage * ITEMS_PER_PAGE) < allUsers.length) { currentPage++; renderUserTable(); } }
-
-    function switchView(viewName, element) {
-        document.getElementById('view-users').style.display = viewName === 'USERS' ? 'block' : 'none';
-        document.getElementById('view-classes').style.display = viewName === 'CLASSES' ? 'block' : 'none';
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        if(element) element.classList.add('active');
+    function switchView(view, el) {
+        document.getElementById('view-users').style.display = view === 'USERS' ? 'block' : 'none';
+        document.getElementById('view-classes').style.display = view === 'CLASSES' ? 'block' : 'none';
+        document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
+        if(el) el.classList.add('active');
     }
-
     function getRoleBadge(role) {
         const map = { 'ADMIN': 'danger', 'TEACHER': 'primary', 'STUDENT': 'success' };
         return `<span class="badge bg-${map[role] || 'secondary'}">${role}</span>`;
     }
-
     function showToast(msg, type) {
         let bg = type === 'success' ? "#198754" : "#dc3545";
         Toastify({ text: msg, duration: 3000, close: true, gravity: "top", position: "right", style: { background: bg } }).showToast();
     }
-
     function logout() { window.location.href = "/logout"; }
 </script>
 </body>

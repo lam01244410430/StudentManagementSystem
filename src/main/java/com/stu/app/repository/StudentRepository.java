@@ -7,11 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Lưu ý: Key của Student là String (do DB là VARCHAR)
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
-    // Tìm sinh viên dựa trên tài khoản User đăng nhập (cho Student Dashboard)
+
+    // Tìm Student theo User ID (đã làm ở bước trước)
     Optional<Student> findByUser_UserId(Long userId);
 
-    // Tìm sinh viên theo lớp (cho Teacher Dashboard)
+    // --- THÊM DÒNG NÀY ĐỂ SỬA LỖI ---
+    // Spring sẽ tự hiểu: Vào Student -> lấy object SchoolClass -> lấy field classId
     List<Student> findBySchoolClass_ClassId(Long classId);
 }

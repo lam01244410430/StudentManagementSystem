@@ -3,7 +3,7 @@ package com.stu.app.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Statistics_reports")
+@Table(name = "Statistics_report")
 public class StatisticsReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

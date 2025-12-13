@@ -8,145 +8,200 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background-color: #343a40; color: white; }
-        .nav-link { color: rgba(255,255,255,.75); cursor: pointer; margin-bottom: 5px; }
-        .nav-link:hover, .nav-link.active { color: white; background-color: #495057; border-radius: 5px; }
+        body { background-color: #f8f9fa; overflow-x: hidden; }
 
-        /* --- STYLES CHO MODAL OVERLAY (Lớp phủ) --- */
+        /* --- SIDEBAR --- */
+        .sidebar {
+            min-height: 100vh; background-color: #212529; color: white;
+            position: fixed; top: 0; bottom: 0; left: 0; z-index: 100;
+            padding: 0; display: flex; flex-direction: column; width: 250px;
+        }
+        .sidebar-header {
+            padding: 20px; background-color: #1a1e21; text-align: center;
+            border-bottom: 1px solid #343a40;
+        }
+        .avatar-circle {
+            width: 80px; height: 80px; background-color: #0d6efd; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 30px; font-weight: bold; margin: 0 auto 10px auto;
+            border: 3px solid #3d454d;
+        }
+        .nav-link { color: rgba(255,255,255,.75); cursor: pointer; padding: 12px 20px; border-radius: 0; }
+        .nav-link:hover, .nav-link.active { color: white; background-color: #343a40; border-left: 4px solid #0d6efd; }
+        .nav-link i { width: 25px; text-align: center; margin-right: 10px; }
+        .logout-section {
+            padding: 20px; border-top: 1px solid #343a40; background-color: #1a1e21; margin-top: auto;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            margin-left: 250px; padding: 20px; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- MODAL --- */
         .custom-overlay {
-            display: none; /* Mặc định ẩn */
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Màu đen mờ */
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(2px); /* Hiệu ứng mờ nền sau */
-            transition: opacity 0.3s ease;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 9999;
+            justify-content: center; align-items: center; backdrop-filter: blur(3px);
         }
-
-        .custom-overlay.active {
-            display: flex; /* Hiện lên khi có class active */
-        }
-
+        .custom-overlay.active { display: flex; }
         .custom-modal {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 500px;
+            background: white; padding: 30px; border-radius: 12px;
+            width: 100%; max-width: 500px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-            position: relative;
-            animation: slideDown 0.3s ease-out;
+            position: relative; animation: slideDown 0.3s ease-out;
+            max-height: 90vh; overflow-y: auto;
         }
+        .custom-modal.large { max-width: 800px; } /* Modal to hơn cho Class Details */
 
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; border: none; background: none; font-size: 1.2rem; }
 
-        .close-btn {
-            position: absolute; top: 15px; right: 20px;
-            cursor: pointer; font-size: 1.2rem; color: #666;
-            background: none; border: none;
-        }
-        .close-btn:hover { color: #dc3545; }
+        /* --- UTILS --- */
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .empty-state { text-align: center; padding: 60px 0; color: #6c757d; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 15px; opacity: 0.3; }
+
+        /* Card Class Actions */
+        .class-actions { position: absolute; top: 10px; right: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <nav class="col-md-2 d-none d-md-block sidebar p-3 d-flex flex-column">
-            <h4 class="text-center mb-4"><i class="fas fa-shield-alt me-2"></i>Admin</h4>
-            <ul class="nav flex-column mb-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="switchView('USERS', this)">
-                        <i class="fas fa-users me-2"></i> User Management
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="switchView('CLASSES', this)">
-                        <i class="fas fa-chalkboard me-2"></i> Class Management
-                    </a>
-                </li>
-            </ul>
-            <div class="border-top border-secondary pt-3 mt-auto">
-                <button onclick="logout()" class="btn btn-outline-light w-100 btn-sm">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <div class="avatar-circle"><i class="fas fa-user"></i></div>
+        <h5 class="mb-0">Hello, Admin</h5>
+        <small class="text-secondary">System Manager</small>
+    </div>
+    <ul class="nav flex-column mt-3 mb-auto">
+        <li class="nav-item">
+            <a class="nav-link active" onclick="switchView('USERS', this)">
+                <i class="fas fa-users"></i> User Management
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" onclick="switchView('CLASSES', this)">
+                <i class="fas fa-chalkboard"></i> Class Management
+            </a>
+        </li>
+    </ul>
+    <div class="logout-section">
+        <button onclick="logout()" class="btn btn-outline-danger w-100">
+            <i class="fas fa-sign-out-alt me-2"></i> Logout
+        </button>
+    </div>
+</nav>
+
+<main class="main-content">
+    <div class="flex-grow-1">
+
+        <div id="view-users">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary fw-bold"><i class="fas fa-users-cog me-2"></i>User Management</h2>
+                <button class="btn btn-primary" onclick="openUserModal()">
+                    <i class="fas fa-plus me-2"></i> Add User
                 </button>
             </div>
-        </nav>
 
-        <main class="col-md-10 ms-sm-auto px-md-4 py-4 d-flex flex-column" style="min-height: 100vh;">
-            <div class="flex-grow-1">
-
-                <div id="view-users">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                        <h2>User Management</h2>
-                        <button class="btn btn-primary btn-sm" onclick="openModal('add-user')">
-                            <i class="fas fa-plus"></i> Add User
-                        </button>
-                    </div>
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body p-0">
-                            <table class="table table-hover mb-0 align-middle">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th class="text-end pe-4">Action</th>
-                                </tr>
-                                </thead>
-                                <tbody id="userTableBody">
-                                <tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-classes" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                        <h2>Class Management</h2>
-                        <button class="btn btn-success btn-sm" onclick="openModal('new-class')">
-                            <i class="fas fa-plus"></i> New Class
-                        </button>
-                    </div>
-                    <div id="classCards" class="row g-3">
-                        <div class="col-12 text-center py-4">Loading classes...</div>
-                    </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 50px;">No.</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <footer th:replace="~{fragments/footer :: footer}">
-                <div class="dashboard-footer">
-                    <small>&copy; 2025 SMS Backup Footer.</small>
+            <div class="pagination-container" id="paginationControls" style="display:none;">
+                <div class="page-info" id="pageInfo">Showing 0-0 of 0 users</div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="prevPage()" id="btnPrev">Previous</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="nextPage()" id="btnNext">Next</button>
                 </div>
-            </footer>
-        </main>
-    </div>
-</div>
+            </div>
+        </div>
 
-<div id="modal-add-user" class="custom-overlay">
+        <div id="view-classes" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary fw-bold"><i class="fas fa-chalkboard me-2"></i>Class Management</h2>
+                <button class="btn btn-primary" onclick="openNewClassModal()">
+                    <i class="fas fa-plus me-2"></i> New Class
+                </button>
+            </div>
+            <div id="classCards" class="row g-3">
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-4 pt-3 border-top text-center text-muted">
+        <small>&copy; 2025 SMS Management System. All rights reserved.</small>
+    </footer>
+</main>
+
+<div id="modal-user" class="custom-overlay">
     <div class="custom-modal">
         <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
-        <h4 class="mb-4 text-primary"><i class="fas fa-user-plus me-2"></i>Add New User</h4>
-        <form onsubmit="event.preventDefault(); alert('Submit User logic here!'); closeModal();">
+        <h4 class="mb-4 text-primary" id="modalUserTitle">Add New User</h4>
+
+        <form id="userForm" onsubmit="handleUserSubmit(event)">
+            <input type="hidden" id="userIdHidden">
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" class="form-control" required>
+                <label class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" id="inputUsername" class="form-control" required placeholder="Login username">
+            </div>
+            <div class="mb-3" id="passwordContainer">
+                <label class="form-label">Password <span class="text-danger">*</span></label>
+                <input type="password" id="inputPassword" class="form-control" placeholder="Login password">
+                <small class="text-muted" id="passwordHint" style="display:none;">Leave blank to keep current</small>
             </div>
             <div class="mb-3">
-                <label class="form-label">Role</label>
-                <select class="form-select">
-                    <option value="STUDENT">Student</option>
+                <label class="form-label">Role <span class="text-danger">*</span></label>
+                <select id="inputRole" class="form-select" onchange="toggleStudentFields()">
                     <option value="TEACHER">Teacher</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="STUDENT">Student</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Save User</button>
+            <div id="studentExtraFields" class="p-3 bg-light rounded mb-3 border" style="display: none;">
+                <h6 class="text-primary mb-3"><i class="fas fa-user-graduate me-2"></i>Student Details</h6>
+                <div class="mb-3">
+                    <label class="form-label">Full Name<span class="text-danger">*</span></label>
+                    <input type="text" id="inputFullname" class="form-control" placeholder="Student's real name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Class Assignment <span class="text-danger">*</span></label>
+                    <select id="inputClassId" class="form-select">
+                        <option value="">-- Select Class --</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender</label>
+                        <select id="inputGender" class="form-select">
+                            <option value="男">男 (Male)</option>
+                            <option value="女">女 (Female)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Birth Date</label>
+                        <input type="date" id="inputBirth" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" id="btnSaveUser">
+                <i class="fas fa-save me-2"></i> Save Changes
+            </button>
         </form>
     </div>
 </div>
@@ -154,177 +209,427 @@
 <div id="modal-new-class" class="custom-overlay">
     <div class="custom-modal">
         <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
-        <h4 class="mb-4 text-success"><i class="fas fa-chalkboard me-2"></i>Create New Class</h4>
-        <form onsubmit="event.preventDefault(); alert('Submit Class logic here!'); closeModal();">
+        <h4 class="mb-4 text-primary"><i class="fas fa-chalkboard me-2"></i>Create New Class</h4>
+        <form onsubmit="handleCreateClass(event)">
             <div class="mb-3">
-                <label class="form-label">Class Name</label>
-                <input type="text" class="form-control" required placeholder="Ex: Software Engineering">
+                <label class="form-label">Select Grade Level</label>
+                <select id="inputGradeLevel" class="form-select" required>
+                    <option value="高一">高一 (Grade 10)</option>
+                    <option value="高二">高二 (Grade 11)</option>
+                    <option value="高三">高三 (Grade 12)</option>
+                </select>
+                <div class="form-text text-muted">
+                    System will automatically assign the next class number (e.g., 高一(3)).
+                </div>
             </div>
-            <button type="submit" class="btn btn-success w-100">Create Class</button>
+            <button type="submit" class="btn btn-primary w-100">Auto Create Class</button>
         </form>
+    </div>
+</div>
+
+<div id="modal-class-details" class="custom-overlay">
+    <div class="custom-modal large"> <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <h4 class="mb-3 text-primary" id="classDetailTitle">Class Details</h4>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered">
+                <thead class="table-light">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Birth Date</th>
+                </tr>
+                </thead>
+                <tbody id="classStudentsTableBody">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <script th:inline="javascript">
+    /* --- CONFIG & STATE --- */
     const API_BASE = "http://localhost:8080/api";
+    let allUsers = [];
+    let allClasses = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
-    // --- 1. ROUTING & MODAL LOGIC ---
-
-    function openModal(type) {
-        // Cập nhật URL trình duyệt mà không reload (History API)
-        const newUrl = window.location.pathname + '?action=' + type;
-        window.history.pushState({ action: type }, '', newUrl);
-
-        // Hiển thị modal tương ứng
-        if(type === 'add-user') {
-            document.getElementById('modal-add-user').classList.add('active');
-        } else if (type === 'new-class') {
-            document.getElementById('modal-new-class').classList.add('active');
-        }
-    }
-
-    function closeModal() {
-        // Reset URL về sạch
-        const cleanUrl = window.location.pathname;
-        window.history.pushState({ action: null }, '', cleanUrl);
-
-        // Ẩn tất cả overlay
-        document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active'));
-    }
-
-    // Xử lý nút Back trên trình duyệt để đóng modal thay vì back trang
-    window.onpopstate = function(event) {
-        document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active'));
-    };
-
-    // Kiểm tra URL khi load trang (nếu người dùng F5 tại link ?action=add-user)
+    // --- 1. INITIALIZATION ---
     window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        if (action === 'add-user') document.getElementById('modal-add-user').classList.add('active');
-        if (action === 'new-class') document.getElementById('modal-new-class').classList.add('active');
-
-        loadUsers(); // Load data mặc định
+        loadUsers();
+        loadClasses();
     }
 
-    // --- 2. VIEW SWITCHING ---
-    function switchView(viewName, element) {
-        document.getElementById('view-users').style.display = viewName === 'USERS' ? 'block' : 'none';
-        document.getElementById('view-classes').style.display = viewName === 'CLASSES' ? 'block' : 'none';
-
-        if(element) {
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        if(viewName === 'USERS') loadUsers();
-        if(viewName === 'CLASSES') loadClasses();
-    }
-
-    // --- 3. DATA LOADING & NO DATA HANDLING ---
-
+    // --- 2. DATA LOADING ---
     async function loadUsers() {
-        const tbody = document.getElementById('userTableBody');
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>';
-
         try {
             const res = await fetch(`${API_BASE}/users`);
-            if (!res.ok) throw new Error("Failed");
-            const users = await res.json();
-
-            // [NO DATA DISPLAY]
-            if (!users || users.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
-                            <i class="fas fa-folder-open fa-3x mb-3 text-secondary opacity-50"></i>
-                            <h5>No Data Available</h5>
-                            <p class="small">There are currently no users in the system.</p>
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>#${u.userId}</td>
-                    <td class="fw-bold">${u.username}</td>
-                    <td>${getRoleBadge(u.role ? u.role.roleName : 'UNKNOWN')}</td>
-                    <td class="text-end pe-4">
-                        <button class="btn btn-sm btn-outline-warning me-2" onclick="editUser(${u.userId})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${u.userId})"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            if (!res.ok) throw new Error("Fetch failed");
+            allUsers = await res.json();
+            currentPage = 1;
+            renderUserTable();
         } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error loading users.</td></tr>';
+            console.warn("API Error (Users):", error);
+            allUsers = []; renderUserTable();
         }
     }
 
     async function loadClasses() {
-        const container = document.getElementById('classCards');
-        container.innerHTML = '<div class="col-12 text-center py-4">Loading...</div>';
-
         try {
             const res = await fetch(`${API_BASE}/classes`);
-            if (!res.ok) throw new Error("Failed");
-            const classes = await res.json();
-
-            // [NO DATA DISPLAY]
-            if (!classes || classes.length === 0) {
-                container.innerHTML = `
-                    <div class="col-12 text-center py-5 text-muted">
-                        <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary opacity-50"></i>
-                        <h5>No Classes Found</h5>
-                        <p class="small">Click "New Class" to create one.</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = classes.map(c => `
-                <div class="col-md-4 col-lg-3">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body text-center">
-                            <div class="mb-3 text-primary"><i class="fas fa-chalkboard fa-3x"></i></div>
-                            <h5 class="card-title fw-bold">${c.className}</h5>
-                            <p class="text-muted small">ID: ${c.classId}</p>
-                            <button class="btn btn-sm btn-light mt-2 w-100">View Details</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            if (!res.ok) throw new Error("Fetch failed");
+            allClasses = await res.json();
+            renderClassView();
         } catch (error) {
-            container.innerHTML = '<div class="col-12 text-center text-danger">Error loading classes.</div>';
+            console.warn("API Error (Classes):", error);
+            allClasses = []; renderClassView();
         }
     }
 
-    // --- 4. ACTIONS & UTILS ---
+    // --- 3. RENDERING UI ---
+    function renderUserTable() {
+        const tbody = document.getElementById('userTableBody');
+        const pagination = document.getElementById('paginationControls');
+        tbody.innerHTML = "";
 
-    async function deleteUser(userId) {
-        if (!confirm("Delete this user?")) return;
-        try {
-            const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'DELETE' });
-            if (res.ok) {
-                showToast("Deleted successfully", "success");
-                loadUsers();
-            } else showToast("Failed to delete", "error");
-        } catch (e) { showToast("Server error", "error"); }
+        if (!allUsers || allUsers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-folder-open"></i><h5>No User Data</h5></div></td></tr>`;
+            pagination.style.display = 'none';
+            return;
+        }
+
+        pagination.style.display = 'flex';
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageData = allUsers.slice(start, end);
+
+        pageData.forEach((u, index) => {
+            const stt = start + index + 1;
+            const roleName = u.role ? u.role.roleName : 'UNKNOWN';
+            // Không hiện DB ID, FullName rỗng thì để trống
+            const row = `
+                <tr>
+                    <td class="ps-4 fw-bold text-secondary">${stt}</td>
+                    <td class="fw-bold text-primary">${u.username}</td>
+                    <td>${u.fullName || ''}</td>
+                    <td>${getRoleBadge(roleName)}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-light text-primary border me-2" onclick="openEditUser(${u.userId})"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-sm btn-light text-danger border" onclick="deleteUser(${u.userId})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+        updatePaginationInfo(allUsers.length);
     }
 
-    function editUser(id) { alert("Edit feature pending for ID: " + id); }
-    function logout() { window.location.href = '/logout'; }
+    function renderClassView() {
+        const container = document.getElementById('classCards');
+        container.innerHTML = "";
 
+        if (!allClasses || allClasses.length === 0) {
+            container.innerHTML = `<div class="col-12"><div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><h5>No Classes Found</h5></div></div>`;
+            return;
+        }
+
+        container.innerHTML = allClasses.map(c => `
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                     <div class="class-actions">
+                        <button class="btn btn-sm btn-link text-danger" onclick="deleteClass(${c.classId})" title="Delete Class"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="card-body text-center mt-3">
+                        <div class="mb-3 text-primary"><i class="fas fa-chalkboard fa-3x"></i></div>
+                        <h5 class="card-title fw-bold">${c.className}</h5>
+                        <p class="text-muted small">ID: ${c.classId}</p>
+                        <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="openClassDetails(${c.classId}, '${c.className}')">
+                            <i class="fas fa-list me-1"></i> View Students
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- 4. NEW CLASS LOGIC (AUTO INCREMENT) ---
+    function openNewClassModal() {
+        document.getElementById('inputGradeLevel').value = "高一";
+        document.getElementById('modal-new-class').classList.add('active');
+    }
+
+    async function handleCreateClass(e) {
+        e.preventDefault();
+        const gradeBase = document.getElementById('inputGradeLevel').value; // ex: 高一
+
+        // 1. Filter existing classes of this grade to find max number
+        // Assuming format is Name(N) like 高一(1), 高一(2)
+        let maxNum = 0;
+        const regex = new RegExp(`^${gradeBase}\\((\\d+)\\)$`);
+
+        allClasses.forEach(c => {
+            const match = c.className.match(regex);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > maxNum) maxNum = num;
+            }
+        });
+
+        const nextNum = maxNum + 1;
+        const newClassName = `${gradeBase}(${nextNum})`;
+
+        // 2. Send API Request
+        try {
+            const res = await fetch(`${API_BASE}/classes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ className: newClassName })
+            });
+
+            if (res.ok) {
+                showToast(`Created ${newClassName} successfully!`, "success");
+                closeModal();
+                loadClasses();
+            } else {
+                showToast("Failed to create class", "error");
+            }
+        } catch (err) {
+            showToast("Server error", "error");
+        }
+    }
+
+    async function deleteClass(id) {
+        // Cảnh báo người dùng rõ ràng hơn
+        if(!confirm("Cảnh báo: Hành động này sẽ xóa lớp học.\nNếu Database chưa cấu hình 'Cascade', bạn phải gỡ hết học sinh khỏi lớp này trước.\nBạn có chắc chắn muốn xóa?")) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/classes/${id}`, { method: 'DELETE' });
+
+            if(res.ok) {
+                showToast("Đã xóa lớp học thành công!", "success");
+                loadClasses();
+                // Cập nhật lại list user để đồng bộ dữ liệu nếu cần
+                loadUsers();
+            } else {
+                // Đọc lỗi từ server trả về (nếu có)
+                const errorData = await res.json().catch(() => ({}));
+                console.error(errorData);
+
+                if (res.status === 500) {
+                     showToast("Không thể xóa: Lớp học này đang có học sinh!", "error");
+                } else {
+                     showToast("Lỗi khi xóa lớp học (Code: " + res.status + ")", "error");
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("Lỗi kết nối Server", "error");
+        }
+    }
+
+    // --- 5. CLASS DETAILS LOGIC (VIEW STUDENTS FROM DB) ---
+    async function openClassDetails(classId, className) {
+        // Cập nhật tiêu đề Modal
+        document.getElementById('classDetailTitle').innerText = `Students in ${className}`;
+
+        // Hiển thị Modal
+        document.getElementById('modal-class-details').classList.add('active');
+
+        // Hiển thị loading
+        const tbody = document.getElementById('classStudentsTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><br>Loading data from database...</td></tr>';
+
+        try {
+            // Gọi API lấy học sinh theo classId
+            const res = await fetch(`${API_BASE}/classes/${classId}/students`);
+
+            if (!res.ok) throw new Error("Failed to fetch class students");
+
+            const students = await res.json();
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No students found in this class.</td></tr>';
+                return;
+            }
+
+            // Render dữ liệu
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td>${s.userId}</td>
+                    <td class="fw-bold">${s.fullName || '---'}</td>
+                    <td>${s.gender || '-'}</td>
+                    <td>${s.birth || '-'}</td>
+                </tr>
+            `).join('');
+
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Error loading data.</td></tr>';
+        }
+    }
+
+    // --- 6. USER MODAL LOGIC ---
+    function toggleStudentFields() {
+        const role = document.getElementById('inputRole').value;
+        const studentFields = document.getElementById('studentExtraFields');
+        const classSelect = document.getElementById('inputClassId');
+        const fullNameInput = document.getElementById('inputFullname');
+
+        if (role === 'STUDENT') {
+            studentFields.style.display = 'block';
+            classSelect.required = true;
+            fullNameInput.required = true;
+            populateClassDropdown();
+        } else {
+            studentFields.style.display = 'none';
+            classSelect.required = false;
+            classSelect.value = "";
+            fullNameInput.required = false;
+            fullNameInput.value = "";
+        }
+    }
+
+    function populateClassDropdown() {
+        const select = document.getElementById('inputClassId');
+        select.innerHTML = '<option value="">-- Select a Class --</option>';
+        allClasses.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.classId;
+            option.text = c.className;
+            select.appendChild(option);
+        });
+    }
+
+    function openUserModal() {
+        document.getElementById('modalUserTitle').innerText = "Add New User";
+        document.getElementById('userIdHidden').value = "";
+        document.getElementById('userForm').reset();
+        document.getElementById('inputPassword').required = true;
+        document.getElementById('passwordHint').style.display = 'none';
+        toggleStudentFields();
+        document.getElementById('modal-user').classList.add('active');
+    }
+
+    function openEditUser(id) {
+        const user = allUsers.find(u => u.userId === id);
+        if(!user) return;
+
+        document.getElementById('modalUserTitle').innerText = "Edit User #" + id;
+        document.getElementById('userIdHidden').value = user.userId;
+        document.getElementById('inputUsername').value = user.username;
+        document.getElementById('inputFullname').value = user.fullName || "";
+
+        // Password không bắt buộc khi Edit
+        document.getElementById('inputPassword').required = false;
+        document.getElementById('passwordHint').style.display = 'block';
+
+        const role = user.role ? user.role.roleName : "STUDENT";
+        document.getElementById('inputRole').value = role;
+
+        toggleStudentFields(); // Hiển thị/Ẩn các trường thông tin học sinh
+
+        if(role === 'STUDENT') {
+             // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+             if(user.schoolClass) {
+                 document.getElementById('inputClassId').value = user.schoolClass.classId;
+             }
+
+             if(user.gender) document.getElementById('inputGender').value = user.gender;
+             if(user.birth) document.getElementById('inputBirth').value = user.birth;
+        }
+        document.getElementById('modal-user').classList.add('active');
+    }
+
+    async function handleUserSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('userIdHidden').value;
+        const roleName = document.getElementById('inputRole').value;
+        const classId = document.getElementById('inputClassId').value;
+        const fullName = document.getElementById('inputFullname').value;
+
+        const payload = {
+            username: document.getElementById('inputUsername').value,
+            role: { roleName: roleName }
+        };
+
+        const password = document.getElementById('inputPassword').value;
+        if (password) payload.password = password;
+
+        if (roleName === 'STUDENT') {
+            if (!classId) { showToast("Please select a class!", "error"); return; }
+            if (!fullName) { showToast("Student Name is required!", "error"); return; }
+
+            payload.fullName = fullName;
+
+            // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+            payload.schoolClass = { classId: parseInt(classId) };
+
+            payload.gender = document.getElementById('inputGender').value;
+            payload.birth = document.getElementById('inputBirth').value;
+        } else {
+            payload.fullName = null;
+        }
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_BASE}/users/${id}` : `${API_BASE}/users`;
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                showToast(id ? "Updated!" : "Created successfully!", "success");
+                closeModal();
+                loadUsers(); // Tải lại danh sách user
+            } else {
+                showToast("Action failed!", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("Server error", "error");
+        }
+    }
+
+    // --- OTHER UTILS ---
+    function closeModal() { document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active')); }
+    function deleteUser(id) {
+        if (!confirm("Are you sure?")) return;
+        fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })
+            .then(res => {
+                if(res.ok) { showToast("Deleted!", "success"); allUsers = allUsers.filter(u => u.userId !== id); renderUserTable(); }
+                else showToast("Failed", "error");
+            }).catch(() => showToast("Server error", "error"));
+    }
+    function updatePaginationInfo(total) {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+        let end = currentPage * ITEMS_PER_PAGE;
+        if (end > total) end = total;
+        document.getElementById('pageInfo').innerText = `Showing ${start}-${end} of ${total} users`;
+        document.getElementById('btnPrev').disabled = (currentPage === 1);
+        document.getElementById('btnNext').disabled = (end >= total);
+    }
+    function prevPage() { if (currentPage > 1) { currentPage--; renderUserTable(); } }
+    function nextPage() { if ((currentPage * ITEMS_PER_PAGE) < allUsers.length) { currentPage++; renderUserTable(); } }
+    function switchView(view, el) {
+        document.getElementById('view-users').style.display = view === 'USERS' ? 'block' : 'none';
+        document.getElementById('view-classes').style.display = view === 'CLASSES' ? 'block' : 'none';
+        document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
+        if(el) el.classList.add('active');
+    }
     function getRoleBadge(role) {
         const map = { 'ADMIN': 'danger', 'TEACHER': 'primary', 'STUDENT': 'success' };
         return `<span class="badge bg-${map[role] || 'secondary'}">${role}</span>`;
     }
-
     function showToast(msg, type) {
-        let bg = type === 'success' ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff5f6d, #ffc371)";
+        let bg = type === 'success' ? "#198754" : "#dc3545";
         Toastify({ text: msg, duration: 3000, close: true, gravity: "top", position: "right", style: { background: bg } }).showToast();
     }
+    function logout() { window.location.href = "/logout"; }
 </script>
 </body>
 </html>

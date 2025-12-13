@@ -6,13 +6,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AuthController {
 
+    // Chỉ giữ lại cái này để hiển thị form
     @GetMapping("/login")
-    public String loginPage() {
-        return "login"; // Trả về templates/login.html
+    public String showLoginForm() {
+        return "login";
     }
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/login"; // Mặc định vào là bắt login
+        return "redirect:/login"; // Hoặc trả về trang chủ công khai nếu có
     }
+
+    // Không cần hàm logout ở đây vì SecurityConfig đã có .logoutUrl("/logout")
 }

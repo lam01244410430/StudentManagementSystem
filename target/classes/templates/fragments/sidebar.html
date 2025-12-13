@@ -15,21 +15,21 @@
             </a>
         </li>
 
-        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN' or session.user.role.roleName == 'TEACHER'}">
+        <li th:if="${session.user != null and (session.user.role.roleName == 'ADMIN' or session.user.role.roleName == 'TEACHER')}">
             <a th:href="@{/students}" class="nav-link text-white"
                th:classappend="${currentPage == 'students'} ? 'active bg-primary' : ''">
                 <i class="fas fa-user-graduate me-2"></i> Students
             </a>
         </li>
 
-        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN'}">
+        <li class="nav-item mt-2" th:if="${session.user != null and session.user.role.roleName == 'ADMIN'}">
             <a th:href="@{/teachers}" class="nav-link text-white"
                th:classappend="${currentPage == 'teachers'} ? 'active bg-primary' : ''">
                 <i class="fas fa-chalkboard-teacher me-2"></i> Teachers
             </a>
         </li>
 
-        <li class="nav-item mt-2" th:if="${session.user.role.roleName == 'ADMIN'}">
+        <li class="nav-item mt-2" th:if="${session.user != null and session.user.role.roleName == 'ADMIN'}">
             <a th:href="@{/courses}" class="nav-link text-white"
                th:classappend="${currentPage == 'courses'} ? 'active bg-primary' : ''">
                 <i class="fas fa-book me-2"></i> Courses
