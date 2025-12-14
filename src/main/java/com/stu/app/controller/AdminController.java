@@ -1,37 +1,25 @@
 package com.stu.app.controller;
 
-import com.stu.app.model.Role;
+import com.stu.app.dto.UserDTO;
 import com.stu.app.model.SchoolClass;
 import com.stu.app.model.Student;
-import com.stu.app.model.User;
-import com.stu.app.repository.RoleRepository;
+import com.stu.app.repository.SchoolClassRepository;
 import com.stu.app.repository.StudentRepository;
 import com.stu.app.repository.UserRepository;
-import com.stu.app.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
-
-    // Cần thêm các Repository này để lưu dữ liệu trực tiếp tại Controller
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private RoleRepository roleRepository; // Dùng để tìm Role từ DB
+    @Autowired private UserRepository userRepository;
+    @Autowired private StudentRepository studentRepository;
+    @Autowired private SchoolClassRepository classRepository; // Thêm cái này để quản lý lớp
 
     // 1. Trả về View HTML
     @GetMapping("/admin/dashboard")
@@ -39,85 +27,60 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    // 2. Các API JSON
+    // --- CÁC API XỬ LÝ LỚP HỌC (Được gộp vào đây thay vì tạo file mới) ---
 
+    // API: Lấy danh sách lớp
     @ResponseBody
-    @GetMapping("/api/users")
-    public List<User> getAllUsers() {
-        return adminService.getAllUsers();
+    @GetMapping("/api/classes")
+    public List<SchoolClass> getAllClasses() {
+        return classRepository.findAll();
     }
 
-    // --- API TẠO USER MỚI (Logic bạn cần ở đây) ---
+    // API: Tạo lớp mới
     @ResponseBody
-    @PostMapping("/api/users")
-    public ResponseEntity<?> createUser(@RequestBody Map<String, Object> payload) {
+    @PostMapping("/api/classes")
+    public ResponseEntity<SchoolClass> createClass(@RequestBody SchoolClass schoolClass) {
+        return ResponseEntity.ok(classRepository.save(schoolClass));
+    }
+
+    // API: Xóa lớp
+    @ResponseBody
+    @DeleteMapping("/api/classes/{id}")
+    public ResponseEntity<?> deleteClass(@PathVariable Long id) {
         try {
-            // --- BƯỚC 1: XỬ LÝ USER (TÀI KHOẢN) ---
-            User user = new User();
-            user.setUsername((String) payload.get("username"));
-            // Lưu ý: Password nên được mã hóa (BCrypt) trong thực tế
-            user.setPassword((String) payload.get("password"));
-
-            // Xử lý Role
-            Map<String, String> roleMap = (Map<String, String>) payload.get("role");
-            String roleName = roleMap.get("roleName");
-
-            // Tìm Role trong DB (hoặc tạo mới object Role nếu lười query)
-            Role role = roleRepository.findByRoleName(roleName);
-            if (role == null) {
-                role = new Role();
-                role.setRoleName(roleName); // Chỉ dùng tạm nếu DB chưa có role chuẩn
-            }
-            user.setRole(role);
-
-            // Lưu User vào DB trước
-            User savedUser = userRepository.save(user);
-
-            // --- BƯỚC 2: NẾU LÀ STUDENT -> XỬ LÝ TIẾP ---
-            if ("STUDENT".equals(roleName)) {
-                Student student = new Student();
-
-                // Lấy thông tin cá nhân từ payload
-                student.setFullName((String) payload.get("fullName"));
-                student.setGender((String) payload.get("gender"));
-                String birthStr = (String) payload.get("birth");
-                if (birthStr != null && !birthStr.isEmpty()) {
-                    student.setBirth(LocalDate.parse(birthStr));
-                }
-
-                // ... set class ...
-                Map<String, Object> classData = (Map<String, Object>) payload.get("SchoolClass");
-                if (classData != null && classData.get("classId") != null) {
-                    Long classId = Long.valueOf(classData.get("classId").toString());
-
-                    SchoolClass schoolClass = new SchoolClass();
-                    schoolClass.setClassId(classId);
-
-                    // --- SỬA TẠI ĐÂY ---
-                    student.setSchoolClass(schoolClass); // Dùng tên hàm mới
-                    // -------------------
-                }
-
-                // --- QUAN TRỌNG: GÁN USER VỪA TẠO VÀO STUDENT ---
-                student.setUser(savedUser);
-                // ------------------------------------------------
-
-                studentRepository.save(student);
-            }
-
-            return ResponseEntity.ok(savedUser);
-
+            classRepository.deleteById(id);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Error deleting class. It might contain students.");
         }
     }
 
+    // API: Lấy danh sách học sinh theo lớp (View Students)
     @ResponseBody
-    @DeleteMapping("/api/users/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        // Lưu ý: Nếu user là Student, cần xoá Student trước (hoặc dùng Cascade)
-        adminService.deleteUser(id);
-        return ResponseEntity.ok().build();
+    @GetMapping("/api/classes/{id}/students")
+    public ResponseEntity<List<UserDTO>> getStudentsByClass(@PathVariable Long id) {
+        // Gọi Repository tìm học sinh trong lớp
+        List<Student> students = studentRepository.findBySchoolClass_ClassId(id);
+
+        // Chuyển đổi sang UserDTO để Frontend hiển thị
+        List<UserDTO> result = new ArrayList<>();
+        for (Student s : students) {
+            UserDTO dto = new UserDTO();
+
+            // Lấy User ID nếu đã liên kết tài khoản
+            if (s.getUser() != null) {
+                dto.setUserId(s.getUser().getUserId());
+                dto.setUsername(s.getUser().getUsername());
+            } else {
+                dto.setUsername(s.getStudentId()); // Fallback nếu chưa có user
+            }
+
+            dto.setFullName(s.getFullName());
+            dto.setGender(s.getGender());
+            dto.setBirth(s.getBirth());
+
+            result.add(dto);
+        }
+        return ResponseEntity.ok(result);
     }
 }

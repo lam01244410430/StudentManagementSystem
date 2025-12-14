@@ -5,38 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb108daa-e60e-42b9-8043-3f6e53c120f8" name="Changes" comment="Update">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/ClassController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/dto/GradeDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/service/TeacherService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/service/UserService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/UserRestController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/dto/UserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AdminController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/StudentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/TeacherController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/TeacherController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/SchoolClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/SchoolClass.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Score.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Score.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/StatisticsReport.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/StatisticsReport.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Student.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/ScoreRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/ScoreRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/ClassController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/ClassController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/StudentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/admin/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/admin/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/fragments/sidebar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/teacher/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/teacher/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/config/SecurityConfig.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AdminController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AdminController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AuthController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/StudentController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/StudentController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/SchoolClass.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/SchoolClass.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/StatisticsReport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/StatisticsReport.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/Student.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/Student.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/User.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/repository/ScoreRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/repository/ScoreRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/repository/UserRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/templates/admin/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/admin/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/fragments/sidebar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/templates/teacher/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/teacher/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/ClassController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/ClassController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/ScoreService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/ScoreService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/TeacherService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/TeacherService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/UserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/UserService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/报告-班级-姓名.docx" beforeDir="false" afterPath="$PROJECT_DIR$/报告-班级-姓名.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +70,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.Main.executor": "Debug",
-    "Application.com.stu.app.Main.executor": "Run",
+    "Application.com.stu.app.Main.executor": "Debug",
     "DefaultHtmlFileTemplate": "HTML File",
     "Downloaded.Files.Path.Enabled": "false",
     "Maven. [install].executor": "Run",
@@ -105,7 +91,7 @@
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/lamvi/IdeaProjects/WalnutApp",
     "onboarding.tips.debug.path": "C:/Users/lamvi/IdeaProjects/Walnut/src/Main.java",
-    "project.structure.last.edited": "Libraries",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "reference.settings.project.maven.runner"
@@ -122,22 +108,11 @@
         <option value="Application" />
       </set>
     </option>
-    <option name="configurationStatuses">
-      <map>
-        <entry key="Application">
-          <value>
-            <map>
-              <entry key="com.stu.app.Main" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
   <component name="RunManager">
     <configuration name="com.stu.app.Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.stu.app.Main" />
-      <module name="StudentManagementSystem" />
+      <module name="app" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.walnut.app.*" />

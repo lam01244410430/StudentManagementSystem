@@ -25,25 +25,6 @@ public class ClassController {
     private UserRepository userRepository; // [QUAN TRỌNG] Dùng StudentRepository
     // --- API ---
 
-    @GetMapping("/api/classes")
-    @ResponseBody
-    public List<SchoolClass> getAllClasses() {
-        return schoolClassRepository.findAll();
-    }
-
-    @PostMapping("/api/classes")
-    @ResponseBody
-    public SchoolClass createClass(@RequestBody SchoolClass newClass) {
-        return schoolClassRepository.save(newClass);
-    }
-
-    @DeleteMapping("/api/classes/{id}")
-    @ResponseBody
-    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
-        schoolClassRepository.deleteById(id);
-        return ResponseEntity.ok().build();
-    }
-
     // [QUAN TRỌNG] API lấy danh sách học sinh trong lớp
     @GetMapping("/api/classes/{classId}/students")
     @ResponseBody
