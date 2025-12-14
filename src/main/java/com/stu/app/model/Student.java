@@ -30,13 +30,12 @@ public class Student {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "class_id", nullable = false)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JsonIgnoreProperties("students")
+    @JsonIgnoreProperties({"students", "grades"}) // FIX: Chặn list students và grades (nếu có) trong SchoolClass
     private SchoolClass schoolClass;
 
-    // Tương tự, tránh lấy ngược lại thông tin dư thừa từ User nếu không cần thiết
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    @JsonIgnoreProperties({"password", "role"}) // Ẩn pass khi hiện thông tin student
+    @JsonIgnoreProperties({"password", "role", "student"}) // FIX: Chặn tham chiếu ngược lại Student
     private User user;
 
     public Student() {}

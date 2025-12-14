@@ -25,15 +25,6 @@ public class ClassController {
     private UserRepository userRepository; // [QUAN TRỌNG] Dùng StudentRepository
     // --- API ---
 
-    // [QUAN TRỌNG] API lấy danh sách học sinh trong lớp
-    @GetMapping("/api/classes/{classId}/students")
-    @ResponseBody
-    public ResponseEntity<List<Student>> getStudentsByClass(@PathVariable Long classId) {
 
-        // --- SỬA Ở ĐÂY ---
-        // Dùng studentRepository thay vì userRepository
-        List<Student> students = studentRepository.findBySchoolClass_ClassId(classId);
 
-        return ResponseEntity.ok(students);
-    }
 }

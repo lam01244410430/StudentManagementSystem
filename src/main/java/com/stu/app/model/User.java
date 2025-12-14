@@ -1,5 +1,6 @@
 package com.stu.app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -26,6 +27,7 @@ public class User {
     // mappedBy = "user": Trỏ tới biến 'private User user' bên class Student
     // optional = true: Vì Teacher và Admin sẽ KHÔNG có thông tin này (null)
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user", "scores"})
     private Student studentInfo;
 
     public User() {}

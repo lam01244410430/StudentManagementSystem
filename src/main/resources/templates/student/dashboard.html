@@ -18,7 +18,7 @@
     <div class="container">
         <a class="navbar-brand" href="#"><i class="fas fa-graduation-cap me-2"></i>Student Portal</a>
         <div class="d-flex align-items-center">
-            <span class="text-white me-3" id="welcomeName">Welcome, Student</span>
+            <span class="text-white me-3" id="welcomeName">Welcome, [Loading Name...]</span>
             <button onclick="logout()" class="btn btn-outline-light btn-sm">Logout</button>
         </div>
     </div>
@@ -65,68 +65,86 @@
 <script th:inline="javascript">
     const API_BASE = "http://localhost:8080/api";
 
-    // 1. NHẬN DỮ LIỆU TỪ SERVER (Không dùng localStorage nữa)
-    // Các giá trị này được Controller gửi xuống qua Model
+    // 1. NHẬN DỮ LIỆU TỪ SERVER
     const user = {
         userId: [[${userId}]],
-        username: [[${username}]],
-        role: { roleName: 'STUDENT' }
+        username: [[${username}]]
     };
 
-    // Hiển thị tên người dùng
-    document.getElementById('welcomeName').innerText = `Welcome, ${user.username}`;
+    // Khởi tạo tên hiển thị mặc định
+    let displayFullName = user.username || "Student";
+    document.getElementById('welcomeName').innerText = `Welcome, ${displayFullName}`;
 
     async function loadStudentData() {
+        const tbody = document.getElementById('scoreTableBody');
+
         try {
-            // Bước 1: Lấy thông tin chi tiết Student từ UserID
-            // (Vì bảng Score liên kết với StudentId chứ không phải UserId)
+            // BƯỚC 1: Lấy thông tin Student (có fullName, Class, studentId)
             const studentRes = await fetch(`${API_BASE}/students/by-user/${user.userId}`);
 
             if(!studentRes.ok) {
-                document.getElementById('scoreTableBody').innerHTML =
-                    `<tr><td colspan="3" class="text-center text-danger">Student Profile not found. Please contact Admin.</td></tr>`;
+                const errorText = await studentRes.text();
+                console.error("Student API Error:", studentRes.status, errorText);
+                tbody.innerHTML =
+                    `<tr><td colspan="3" class="text-center text-danger">Student Profile not found (${studentRes.status}). Please contact Admin.</td></tr>`;
                 return;
             }
 
             const student = await studentRes.json();
 
-            // Bước 2: Lấy điểm của Student này
+            // CẬP NHẬT LỜI CHÀO MỪNG VỚI FULL NAME
+            if (student.fullName) {
+                displayFullName = student.fullName;
+                document.getElementById('welcomeName').innerText = `Welcome, ${displayFullName}`;
+            }
+
+            // BƯỚC 2: Lấy điểm của Student này
             const scoresRes = await fetch(`${API_BASE}/scores/student/${student.studentId}`);
             const myScores = await scoresRes.json();
 
-            // Bước 3: Lấy danh sách tất cả Môn học (để hiển thị cả môn chưa có điểm)
+            // BƯỚC 3: Lấy danh sách tất cả Môn học (để hiển thị cả môn chưa có điểm)
             const coursesRes = await fetch(`${API_BASE}/courses`);
             const courses = await coursesRes.json();
 
-            // Bước 4: Render ra bảng
-            const tbody = document.getElementById('scoreTableBody');
-
+            // BƯỚC 4: Render ra bảng
             if (courses.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center">No courses available.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = courses.map(course => {
-                // Tìm xem môn này sinh viên đã có điểm chưa
                 const scoreRecord = myScores.find(s => s.course.courseId === course.courseId);
                 const scoreVal = scoreRecord ? scoreRecord.scoreValue : null;
 
                 // Logic hiển thị Status Badge
                 let statusBadge = '<span class="badge bg-secondary">Not Graded</span>';
                 let scoreDisplay = '-';
+                let scoreClass = 'text-primary';
 
                 if (scoreVal !== null) {
                     scoreDisplay = scoreVal;
-                    if (scoreVal >= 90) statusBadge = '<span class="badge bg-warning text-dark">Superior</span>';
-                    else if (scoreVal >= 80) statusBadge = '<span class="badge bg-primary">Excellent</span>';
-                    else if (scoreVal >= 60) statusBadge = '<span class="badge bg-success">Pass</span>';
-                    else statusBadge = '<span class="badge bg-danger">Fail</span>';
+                    if (scoreVal >= 90) {
+                        statusBadge = '<span class="badge bg-success">Superior</span>';
+                        scoreClass = 'text-success';
+                    }
+                    else if (scoreVal >= 80) {
+                        statusBadge = '<span class="badge bg-primary">Excellent</span>';
+                        scoreClass = 'text-primary';
+                    }
+                    else if (scoreVal >= 60) {
+                        statusBadge = '<span class="badge bg-warning text-dark">Pass</span>';
+                        scoreClass = 'text-warning';
+                    }
+                    else {
+                        statusBadge = '<span class="badge bg-danger">Fail</span>';
+                        scoreClass = 'text-danger';
+                    }
                 }
 
                 return `
                     <tr>
                         <td><strong>${course.courseName}</strong></td>
-                        <td class="text-center fw-bold text-primary">${scoreDisplay}</td>
+                        <td class="text-center fw-bold ${scoreClass}">${scoreDisplay}</td>
                         <td class="text-center">${statusBadge}</td>
                     </tr>
                 `;
@@ -134,8 +152,10 @@
 
         } catch (error) {
             console.error("Error loading data:", error);
-            document.getElementById('scoreTableBody').innerHTML =
-                `<tr><td colspan="3" class="text-center text-danger">Error loading data. Server might be offline.</td></tr>`;
+            // Hiển thị lại tên đã load được (hoặc username) và thông báo lỗi server
+            document.getElementById('welcomeName').innerText = `Welcome, ${displayFullName}`;
+            tbody.innerHTML =
+                `<tr><td colspan="3" class="text-center text-danger">Error loading data. Server might be offline or a data format error occurred.</td></tr>`;
         }
     }
 

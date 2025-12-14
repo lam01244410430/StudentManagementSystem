@@ -53,7 +53,7 @@
             position: relative; animation: slideDown 0.3s ease-out;
             max-height: 90vh; overflow-y: auto;
         }
-        .custom-modal.large { max-width: 800px; } /* Modal to hơn cho Class Details */
+        .custom-modal.large { max-width: 800px; } /* Larger Modal for Class Details */
 
         @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; border: none; background: none; font-size: 1.2rem; }
@@ -105,6 +105,12 @@
                 </button>
             </div>
 
+            <div class="mb-3 d-flex justify-content-between">
+                <input type="text" id="searchInput" class="form-control me-3" placeholder="Search by Username, Full Name, or Role..." onkeyup="filterUsers()" style="max-width: 400px;">
+                <button class="btn btn-outline-secondary" onclick="goToLastPage()" title="Go to last page">
+                    <i class="fas fa-angle-double-right me-1"></i> Last Page
+                </button>
+            </div>
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0 align-middle">
@@ -112,7 +118,7 @@
                         <tr>
                             <th class="ps-4" style="width: 50px;">No.</th>
                             <th>Username</th>
-                            <th>Full Name</th>
+                            <th>Class</th> <th>Full Name</th>
                             <th>Role</th>
                             <th class="text-end pe-4">Action</th>
                         </tr>
@@ -252,7 +258,8 @@
 <script th:inline="javascript">
     /* --- CONFIG & STATE --- */
     const API_BASE = "http://localhost:8080/api";
-    let allUsers = [];
+    let allUsersData = []; // Store original full data
+    let filteredUsers = []; // Store data currently displayed/filtered
     let allClasses = [];
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
@@ -268,12 +275,15 @@
         try {
             const res = await fetch(`${API_BASE}/users`);
             if (!res.ok) throw new Error("Fetch failed");
-            allUsers = await res.json();
-            currentPage = 1;
-            renderUserTable();
+            allUsersData = await res.json();
+
+            // Khởi tạo filteredUsers bằng toàn bộ dữ liệu lần đầu
+            filterUsers(); // Call filterUsers to initialize filtered data and render table
         } catch (error) {
             console.warn("API Error (Users):", error);
-            allUsers = []; renderUserTable();
+            allUsersData = [];
+            filteredUsers = [];
+            renderUserTable();
         }
     }
 
@@ -289,14 +299,44 @@
         }
     }
 
-    // --- 3. RENDERING UI ---
+    // --- 3. RENDERING UI & SEARCH/PAGINATION ---
+
+    function filterUsers() {
+        const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+
+        filteredUsers = allUsersData.filter(u => {
+            const username = u.username ? u.username.toLowerCase() : '';
+            const fullName = u.fullName ? u.fullName.toLowerCase() : '';
+            const roleName = u.role && u.role.roleName ? u.role.roleName.toLowerCase() : '';
+            const className = u.schoolClass && u.schoolClass.className ? u.schoolClass.className.toLowerCase() : '';
+
+            // Search logic: check username, fullName, roleName, and className
+            return username.includes(query) ||
+                   fullName.includes(query) ||
+                   roleName.includes(query) ||
+                   className.includes(query);
+        });
+
+        currentPage = 1;
+        renderUserTable();
+    }
+
+    function goToLastPage() {
+        const totalItems = filteredUsers.length;
+        if (totalItems === 0) return;
+
+        const lastPage = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        currentPage = lastPage;
+        renderUserTable();
+    }
+
     function renderUserTable() {
         const tbody = document.getElementById('userTableBody');
         const pagination = document.getElementById('paginationControls');
         tbody.innerHTML = "";
 
-        if (!allUsers || allUsers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-folder-open"></i><h5>No User Data</h5></div></td></tr>`;
+        if (!filteredUsers || filteredUsers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-folder-open"></i><h5>No User Data Found</h5></div></td></tr>`;
             pagination.style.display = 'none';
             return;
         }
@@ -304,17 +344,20 @@
         pagination.style.display = 'flex';
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
-        const pageData = allUsers.slice(start, end);
+        const pageData = filteredUsers.slice(start, end);
 
         pageData.forEach((u, index) => {
             const stt = start + index + 1;
             const roleName = u.role ? u.role.roleName : 'UNKNOWN';
-            // Không hiện DB ID, FullName rỗng thì để trống
+
+            // Get Class Name, default to N/A if not a student or unassigned
+            const className = u.schoolClass ? u.schoolClass.className : 'N/A';
+
             const row = `
                 <tr>
                     <td class="ps-4 fw-bold text-secondary">${stt}</td>
                     <td class="fw-bold text-primary">${u.username}</td>
-                    <td>${u.fullName || ''}</td>
+                    <td>${className}</td> <td>${u.fullName || ''}</td>
                     <td>${getRoleBadge(roleName)}</td>
                     <td class="text-end pe-4">
                         <button class="btn btn-sm btn-light text-primary border me-2" onclick="openEditUser(${u.userId})"><i class="fas fa-pen"></i></button>
@@ -323,7 +366,7 @@
                 </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
-        updatePaginationInfo(allUsers.length);
+        updatePaginationInfo(filteredUsers.length);
     }
 
     function renderClassView() {
@@ -401,72 +444,90 @@
     }
 
     async function deleteClass(id) {
-        // Cảnh báo người dùng rõ ràng hơn
-        if(!confirm("Cảnh báo: Hành động này sẽ xóa lớp học.\nNếu Database chưa cấu hình 'Cascade', bạn phải gỡ hết học sinh khỏi lớp này trước.\nBạn có chắc chắn muốn xóa?")) return;
+        // Warning user explicitly
+        if(!confirm("WARNING: This action will delete the class.\nIf the Database is not configured with 'Cascade', you must remove all students from this class first.\nAre you sure you want to delete?")) return;
 
         try {
             const res = await fetch(`${API_BASE}/classes/${id}`, { method: 'DELETE' });
 
             if(res.ok) {
-                showToast("Đã xóa lớp học thành công!", "success");
+                showToast("Class deleted successfully!", "success");
                 loadClasses();
-                // Cập nhật lại list user để đồng bộ dữ liệu nếu cần
+                // Reload users to update class assignment display
                 loadUsers();
             } else {
-                // Đọc lỗi từ server trả về (nếu có)
                 const errorData = await res.json().catch(() => ({}));
                 console.error(errorData);
 
                 if (res.status === 500) {
-                     showToast("Không thể xóa: Lớp học này đang có học sinh!", "error");
+                     showToast("Cannot delete: This class still contains students!", "error");
                 } else {
-                     showToast("Lỗi khi xóa lớp học (Code: " + res.status + ")", "error");
+                     showToast("Error deleting class (Code: " + res.status + ")", "error");
                 }
             }
         } catch(e) {
             console.error(e);
-            showToast("Lỗi kết nối Server", "error");
+            showToast("Server connection error", "error");
         }
     }
 
     // --- 5. CLASS DETAILS LOGIC (VIEW STUDENTS FROM DB) ---
     async function openClassDetails(classId, className) {
-        // Cập nhật tiêu đề Modal
+        // Update Modal Title
         document.getElementById('classDetailTitle').innerText = `Students in ${className}`;
 
-        // Hiển thị Modal
+        // Show Modal
         document.getElementById('modal-class-details').classList.add('active');
 
-        // Hiển thị loading
+        // Show loading
         const tbody = document.getElementById('classStudentsTableBody');
         tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><br>Loading data from database...</td></tr>';
 
         try {
-            // Gọi API lấy học sinh theo classId
+            // Call API to fetch students by classId
             const res = await fetch(`${API_BASE}/classes/${classId}/students`);
 
-            if (!res.ok) throw new Error("Failed to fetch class students");
+            if (!res.ok) {
+                 const errorBody = await res.text();
+                 console.error("API Error Response:", errorBody);
+                 throw new Error("Failed to fetch class students (Status: " + res.status + ")");
+            }
 
             const students = await res.json();
+            console.log("Students data received:", students);
 
             if (students.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No students found in this class.</td></tr>';
                 return;
             }
 
-            // Render dữ liệu
-            tbody.innerHTML = students.map(s => `
-                <tr>
-                    <td>${s.userId}</td>
-                    <td class="fw-bold">${s.fullName || '---'}</td>
-                    <td>${s.gender || '-'}</td>
-                    <td>${s.birth || '-'}</td>
-                </tr>
-            `).join('');
+            // Render data
+            tbody.innerHTML = students.map(s => {
+                // Prioritize s.username for Student ID (if mapped to student_id string in backend DTO)
+                const studentIdentifier = s.username || s.userId || 'N/A';
+
+                // Handle Birth Date format conversion [YYYY, M, D] -> YYYY-MM-DD
+                let formattedBirth = '---';
+                if (s.birth && Array.isArray(s.birth) && s.birth.length >= 3) {
+                    const [year, month, day] = s.birth;
+                    formattedBirth = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                } else if (typeof s.birth === 'string') {
+                    formattedBirth = s.birth;
+                }
+
+                return `
+                    <tr>
+                        <td>${studentIdentifier}</td>
+                        <td class="fw-bold">${s.fullName || '---'}</td>
+                        <td>${s.gender || '-'}</td>
+                        <td>${formattedBirth}</td>
+                    </tr>
+                `;
+            }).join('');
 
         } catch (error) {
-            console.error(error);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Error loading data.</td></tr>';
+            console.error("Error loading class details:", error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Error loading data. Check console (F12) for network/backend errors.</td></tr>';
         }
     }
 
@@ -493,7 +554,7 @@
 
     function populateClassDropdown() {
         const select = document.getElementById('inputClassId');
-        select.innerHTML = '<option value="">-- Select a Class --</option>';
+        select.innerHTML = '<option value="">-- Select Class --</option>';
         allClasses.forEach(c => {
             const option = document.createElement('option');
             option.value = c.classId;
@@ -513,7 +574,7 @@
     }
 
     function openEditUser(id) {
-        const user = allUsers.find(u => u.userId === id);
+        const user = allUsersData.find(u => u.userId === id);
         if(!user) return;
 
         document.getElementById('modalUserTitle').innerText = "Edit User #" + id;
@@ -521,17 +582,17 @@
         document.getElementById('inputUsername').value = user.username;
         document.getElementById('inputFullname').value = user.fullName || "";
 
-        // Password không bắt buộc khi Edit
+        // Password not required for Edit
         document.getElementById('inputPassword').required = false;
         document.getElementById('passwordHint').style.display = 'block';
 
         const role = user.role ? user.role.roleName : "STUDENT";
         document.getElementById('inputRole').value = role;
 
-        toggleStudentFields(); // Hiển thị/Ẩn các trường thông tin học sinh
+        toggleStudentFields(); // Show/Hide student fields
 
         if(role === 'STUDENT') {
-             // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+             // Assign class ID
              if(user.schoolClass) {
                  document.getElementById('inputClassId').value = user.schoolClass.classId;
              }
@@ -563,7 +624,7 @@
 
             payload.fullName = fullName;
 
-            // --- THAY ĐỔI Ở ĐÂY: assignedClass -> schoolClass ---
+            // Mapping schoolClass object for API
             payload.schoolClass = { classId: parseInt(classId) };
 
             payload.gender = document.getElementById('inputGender').value;
@@ -583,9 +644,9 @@
             });
 
             if (res.ok) {
-                showToast(id ? "Updated!" : "Created successfully!", "success");
+                showToast(id ? "Updated successfully!" : "Created successfully!", "success");
                 closeModal();
-                loadUsers(); // Tải lại danh sách user
+                loadUsers(); // Reload all data to refresh table
             } else {
                 showToast("Action failed!", "error");
             }
@@ -598,13 +659,20 @@
     // --- OTHER UTILS ---
     function closeModal() { document.querySelectorAll('.custom-overlay').forEach(el => el.classList.remove('active')); }
     function deleteUser(id) {
-        if (!confirm("Are you sure?")) return;
+        if (!confirm("Are you sure you want to delete this user?")) return;
         fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })
             .then(res => {
-                if(res.ok) { showToast("Deleted!", "success"); allUsers = allUsers.filter(u => u.userId !== id); renderUserTable(); }
-                else showToast("Failed", "error");
+                if(res.ok) {
+                    showToast("Deleted successfully!", "success");
+                    // Update main data array and re-render the filtered view
+                    allUsersData = allUsersData.filter(u => u.userId !== id);
+                    filterUsers();
+                } else {
+                    showToast("Failed to delete user", "error");
+                }
             }).catch(() => showToast("Server error", "error"));
     }
+
     function updatePaginationInfo(total) {
         const start = (currentPage - 1) * ITEMS_PER_PAGE + 1;
         let end = currentPage * ITEMS_PER_PAGE;
@@ -613,8 +681,10 @@
         document.getElementById('btnPrev').disabled = (currentPage === 1);
         document.getElementById('btnNext').disabled = (end >= total);
     }
+
     function prevPage() { if (currentPage > 1) { currentPage--; renderUserTable(); } }
-    function nextPage() { if ((currentPage * ITEMS_PER_PAGE) < allUsers.length) { currentPage++; renderUserTable(); } }
+    function nextPage() { if ((currentPage * ITEMS_PER_PAGE) < filteredUsers.length) { currentPage++; renderUserTable(); } }
+
     function switchView(view, el) {
         document.getElementById('view-users').style.display = view === 'USERS' ? 'block' : 'none';
         document.getElementById('view-classes').style.display = view === 'CLASSES' ? 'block' : 'none';

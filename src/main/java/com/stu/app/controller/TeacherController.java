@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,26 +35,37 @@ public class TeacherController {
         model.addAttribute("selectedSubjectId", subjectId);
         model.addAttribute("keyword", keyword);
 
-        // Lấy danh sách điểm (Nếu classId, subjectId là null -> Lấy tất cả)
+        // --- SỬA LỖI: XÁC ĐỊNH CHẾ ĐỘ TRUNG BÌNH ---
+        // isAverageMode = (Subject là ALL) AND (Class là ALL hoặc Class được chọn)
+        boolean isAverageMode = (subjectId == null);
+        model.addAttribute("isAverageMode", isAverageMode);
+
+
+        // Lấy danh sách điểm
         List<GradeDTO> grades = teacherService.getGrades(classId, subjectId, keyword);
         model.addAttribute("grades", grades);
 
-        // Tính toán Thống kê (4 ô vuông)
-        Map<String, Object> stats = teacherService.calculateStats(grades);
-        model.addAttribute("stats", stats);
-
-        // Tính toán Biểu đồ
-        model.addAttribute("distribution", teacherService.getDistribution(grades));
-
-        // Tính toán Top/Bottom students (Lấy 5 người đầu và 5 người cuối)
+        // Các thống kê chỉ hoạt động khi có data
         if (!grades.isEmpty()) {
+            // Tính toán Thống kê (4 ô vuông)
+            Map<String, Object> stats = teacherService.calculateStats(grades);
+            model.addAttribute("stats", stats);
+
+            // Tính toán Biểu đồ
+            model.addAttribute("distribution", teacherService.getDistribution(grades));
+
+            // Tính toán Top/Bottom students
             model.addAttribute("topStudents", grades.stream().limit(5).collect(Collectors.toList()));
-            // Lấy những người điểm thấp (đảo ngược list hoặc lấy đuôi)
             List<GradeDTO> bottom = grades.stream()
-                    .sorted((g1, g2) -> Double.compare(g1.getScore(), g2.getScore())) // Sắp xếp tăng dần để lấy thấp nhất
+                    .sorted(Comparator.comparingDouble(GradeDTO::getScore))
                     .limit(5)
                     .collect(Collectors.toList());
             model.addAttribute("bottomStudents", bottom);
+        } else {
+            model.addAttribute("stats", null);
+            model.addAttribute("distribution", null);
+            model.addAttribute("topStudents", List.of());
+            model.addAttribute("bottomStudents", List.of());
         }
 
         return "teacher/dashboard"; // Trả về file HTML của bạn

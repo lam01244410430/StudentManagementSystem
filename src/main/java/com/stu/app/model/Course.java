@@ -1,5 +1,6 @@
 package com.stu.app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Thêm import này
 import jakarta.persistence.*;
 
 @Entity
@@ -11,13 +12,17 @@ public class Course {
     private Long courseId;
 
     @Column(name = "course_name", columnDefinition = "NVARCHAR(255)")
-    private String courseName; // Tên môn (Tiếng Trung)
+    private String courseName;
 
     @Column(name = "credits")
-    private Integer credits; // Số tín chỉ
+    private Integer credits;
+
+    // --- THÊM VÀO NẾU CÓ LIST SCORE TRONG COURSE ---
+    // @OneToMany(mappedBy = "course")
+    // @JsonIgnoreProperties("course")
+    // private List<Score> scores;
 
     public Course() {}
-
     public Long getCourseId() { return courseId; }
     public void setCourseId(Long courseId) { this.courseId = courseId; }
     public String getCourseName() { return courseName; }

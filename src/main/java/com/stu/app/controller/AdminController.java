@@ -17,17 +17,16 @@ import java.util.List;
 @Controller
 public class AdminController {
 
+    // Giữ nguyên các Autowired
     @Autowired private UserRepository userRepository;
     @Autowired private StudentRepository studentRepository;
-    @Autowired private SchoolClassRepository classRepository; // Thêm cái này để quản lý lớp
+    @Autowired private SchoolClassRepository classRepository;
 
-    // 1. Trả về View HTML
+    // API: Trả về View HTML
     @GetMapping("/admin/dashboard")
     public String dashboard() {
         return "admin/dashboard";
     }
-
-    // --- CÁC API XỬ LÝ LỚP HỌC (Được gộp vào đây thay vì tạo file mới) ---
 
     // API: Lấy danh sách lớp
     @ResponseBody
@@ -59,23 +58,26 @@ public class AdminController {
     @ResponseBody
     @GetMapping("/api/classes/{id}/students")
     public ResponseEntity<List<UserDTO>> getStudentsByClass(@PathVariable Long id) {
-        // Gọi Repository tìm học sinh trong lớp
+        // 1. Gọi hàm tìm kiếm trong Repository
         List<Student> students = studentRepository.findBySchoolClass_ClassId(id);
 
-        // Chuyển đổi sang UserDTO để Frontend hiển thị
+        // 2. Chuyển đổi sang UserDTO
         List<UserDTO> result = new ArrayList<>();
         for (Student s : students) {
             UserDTO dto = new UserDTO();
 
-            // Lấy User ID nếu đã liên kết tài khoản
+            // Student ID (Cột đầu tiên trong bảng Frontend): Sử dụng studentId (là String)
+            // hoặc userId (Long) nếu có liên kết User
             if (s.getUser() != null) {
-                dto.setUserId(s.getUser().getUserId());
+                dto.setUserId(s.getUser().getUserId()); // Dùng cho cột ID trong bảng
                 dto.setUsername(s.getUser().getUsername());
             } else {
-                dto.setUsername(s.getStudentId()); // Fallback nếu chưa có user
+                // Fallback: Nếu không có User, dùng studentId (là ID trong bảng student)
+                dto.setUsername(s.getStudentId());
             }
 
-            dto.setFullName(s.getFullName());
+            // Map các trường thông tin còn lại
+            dto.setFullName(s.getFullName()); // Đã sửa: Dùng getFullName()
             dto.setGender(s.getGender());
             dto.setBirth(s.getBirth());
 
@@ -83,4 +85,5 @@ public class AdminController {
         }
         return ResponseEntity.ok(result);
     }
+
 }

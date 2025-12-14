@@ -4,24 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb108daa-e60e-42b9-8043-3f6e53c120f8" name="Changes" comment="Update">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/UserRestController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/dto/UserDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="e262716b-3a91-4735-8443-37aad793c516" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/AdminController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/ClassController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/ClassController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/repository/StudentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/config/SecurityConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/TeacherController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/TeacherController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/UserRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/controller/UserRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Course.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Course.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Score.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Score.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/Student.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/stu/app/service/TeacherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/stu/app/service/TeacherService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/admin/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/admin/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/student/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/student/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/teacher/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/teacher/dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AdminController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/AdminController.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/ClassController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/ClassController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/ScoreService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/ScoreService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/TeacherService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/TeacherService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/service/UserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/service/UserService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/controller/TeacherController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/controller/TeacherController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/Score.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/Score.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/Student.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/Student.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/stu/app/model/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/stu/app/model/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/templates/admin/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/admin/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/templates/teacher/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/teacher/dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/报告-班级-姓名.docx" beforeDir="false" afterPath="$PROJECT_DIR$/报告-班级-姓名.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,37 +33,6 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Interface" />
-        <option value="HTML File" />
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;lam01244410430&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/lam01244410430/StudentManagementSystem.git&quot;,
-    &quot;accountId&quot;: &quot;e276e9b3-a7bb-45c3-bfd3-ee7dbc0a5680&quot;
-  }
-}</component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
-  </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 0
-}</component>
-  <component name="ProjectId" id="36VJspbPNMPURhs9aMDxR32om2Q" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -69,114 +42,26 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.Main.executor": "Debug",
-    "Application.com.stu.app.Main.executor": "Debug",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Downloaded.Files.Path.Enabled": "false",
-    "Maven. [install].executor": "Run",
-    "Maven.Main.executor": "Run",
-    "Maven.app [clean].executor": "Run",
-    "Maven.app [install,--non-recursive].executor": "Run",
-    "Maven.app [install].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Application.Main.executor": "Run",
+    "Application.com.stu.app.Main.executor": "Run",
     "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/lamvi/IdeaProjects/WalnutApp",
-    "onboarding.tips.debug.path": "C:/Users/lamvi/IdeaProjects/Walnut/src/Main.java",
     "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.runner"
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\lamvi\IdeaProjects\Walnut\src" />
-    </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="configurationTypes">
-      <set>
-        <option value="Application" />
-      </set>
-    </option>
-  </component>
   <component name="RunManager">
-    <configuration name="com.stu.app.Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+    <configuration name="Main" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="com.stu.app.Main" />
-      <module name="app" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.walnut.app.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
+      <module name="StudentManagementSystem" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Application.com.stu.app.Main" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="fb108daa-e60e-42b9-8043-3f6e53c120f8" name="Changes" comment="" />
-      <created>1765086015130</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1765086015130</updated>
-    </task>
-    <task id="LOCAL-00001" summary="Update">
-      <option name="closed" value="true" />
-      <created>1765121246624</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1765121246625</updated>
-    </task>
-    <task id="LOCAL-00002" summary="Update">
-      <option name="closed" value="true" />
-      <created>1765421195974</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1765421195974</updated>
-    </task>
-    <task id="LOCAL-00003" summary="Update">
-      <option name="closed" value="true" />
-      <created>1765421332815</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1765421332815</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update" />
   </component>
 </project>

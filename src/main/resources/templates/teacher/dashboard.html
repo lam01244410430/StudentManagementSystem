@@ -171,20 +171,12 @@
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-theme"><i class="fas fa-list me-2"></i>Grade Management</h5>
 
-                    <form action="/teacher/dashboard" method="get" class="d-flex gap-2">
-                        <input type="hidden" name="classId" th:value="${selectedClassId}">
-                        <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
-
-                        <input class="form-control" type="search" name="keyword" placeholder="Search Student..." th:value="${keyword}">
-
-                        <select name="size" class="form-select" style="width: 80px;" onchange="this.form.submit()">
-                            <option value="10" th:selected="${pageSize == 10}">10</option>
-                            <option value="20" th:selected="${pageSize == 20}">20</option>
-                            <option value="50" th:selected="${pageSize == 50}">50</option>
-                        </select>
-
-                        <button class="btn btn-primary" type="submit">Search</button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <input class="form-control form-control-sm" type="search" id="gradeSearchInput" placeholder="Search Student Name or ID..." style="width: 200px;" onkeyup="filterAndRenderGrades()">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="goToLastGradePage()" title="Go to last page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card-body p-0">
@@ -192,77 +184,26 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                             <tr class="text-secondary text-uppercase small">
-                                <th class="ps-4">
-                                    <a class="sortable-header"
-                                       th:href="@{/teacher/dashboard(page=${currentPage}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy='studentId', order=${sortOrder == 'asc' ? 'desc' : 'asc'})}">
-                                        ID <i class="fas fa-sort"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a class="sortable-header"
-                                       th:href="@{/teacher/dashboard(page=${currentPage}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy='studentName', order=${sortOrder == 'asc' ? 'desc' : 'asc'})}">
-                                        Student Name <i class="fas fa-sort"></i>
-                                    </a>
-                                </th>
+                                <th class="ps-4">ID</th>
+                                <th>Student Name</th>
                                 <th>Class</th>
                                 <th>Subject</th>
-                                <th>
-                                    <a class="sortable-header"
-                                       th:href="@{/teacher/dashboard(page=${currentPage}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy='score', order=${sortOrder == 'asc' ? 'desc' : 'asc'})}">
-                                        Score <i class="fas fa-sort"></i>
-                                    </a>
-                                </th>
+                                <th>Score</th>
                                 <th class="text-center">Rank</th>
                                 <th class="text-end pe-4">Actions</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr th:each="g : ${grades}">
-                                <td class="ps-4 text-muted" th:text="${g.studentId}">1</td>
-                                <td class="fw-bold text-dark" th:text="${g.studentName}">Name</td>
-                                <td><span class="badge bg-light text-dark border" th:text="${g.className}">Class</span></td>
-                                <td th:text="${g.courseName}">Subject</td>
-                                <td>
-                                    <span th:if="${g.score != null}"
-                                          class="fw-bold"
-                                          th:classappend="${g.score >= 90 ? 'text-success' : (g.score >= 80 ? 'text-info' : (g.score >= 60 ? 'text-dark' : 'text-danger'))}"
-                                          th:text="${g.score}"></span>
-                                    <span th:unless="${g.score != null}" class="badge bg-secondary text-white-50 fst-italic">Not Graded</span>
-                                </td>
-                                <td class="text-center fw-bold text-secondary">
-                                    <span th:if="${g.score != null}">#<span th:text="${g.rank}">1</span></span>
-                                    <span th:unless="${g.score != null}">-</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <button th:if="${g.score != null}" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inputGradeModal" onclick="prepareEdit(this)"
-                                            th:data-id="${g.id}" th:data-student="${g.studentName}" th:data-student-id="${g.studentId}" th:data-class-id="${g.classId}" th:data-subject-id="${g.courseId}" th:data-score="${g.score}"><i class="fas fa-edit"></i></button>
-                                    <button th:unless="${g.score != null}" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#inputGradeModal" onclick="prepareEdit(this)"
-                                            th:data-student="${g.studentName}" th:data-student-id="${g.studentId}" th:data-class-id="${g.classId}" th:data-subject-id="${g.courseId}" th:data-score=""><i class="fas fa-plus"></i></button>
-                                </td>
-                            </tr>
-                            <tr th:if="${grades == null || grades.empty}">
-                                <td colspan="7" class="text-center py-5 text-muted">No data found.</td>
-                            </tr>
+                            <tbody id="gradeTableBody">
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="p-3 border-top d-flex justify-content-center" th:if="${totalPages > 1}">
-                        <nav>
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/teacher/dashboard(page=${currentPage - 1}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy=${sortBy}, order=${sortOrder})}">&laquo;</a>
-                                </li>
-                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
-                                    <a class="page-link"
-                                       th:classappend="${currentPage == i} ? 'bg-theme border-success' : 'text-theme'"
-                                       th:href="@{/teacher/dashboard(page=${i}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy=${sortBy}, order=${sortOrder})}" th:text="${i + 1}">1</a>
-                                </li>
-                                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/teacher/dashboard(page=${currentPage + 1}, size=${pageSize}, classId=${selectedClassId}, subjectId=${selectedSubjectId}, keyword=${keyword}, sortBy=${sortBy}, order=${sortOrder})}">&raquo;</a>
-                                </li>
-                            </ul>
-                        </nav>
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center" id="gradePaginationControls" style="display:none;">
+                        <div class="page-info" id="gradePageInfo">Showing 0-0 of 0 students</div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="prevGradePage()" id="btnGradePrev">Previous</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="nextGradePage()" id="btnGradeNext">Next</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -315,14 +256,173 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // 1. Initialize Bootstrap Tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
+<script th:inline="javascript">
+    // --- STATE MANAGEMENT ---
+    // Extract full grade data passed from the backend (previously 'grades' variable)
+    const allGradesData = [[${grades}]];
+    const isAverageMode = [[${isAverageMode}]];
+    let currentGrades = [];
+    let gradeCurrentPage = 0; // 0-based index
+    const GRADE_ITEMS_PER_PAGE = 10;
 
-    // 2. Prepare Modal Logic
+    // --- 1. INITIALIZATION ---
+    window.onload = function() {
+        // Initial setup for grade table
+        filterAndRenderGrades();
+
+        // 2. Initialize Bootstrap Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    }
+
+    // --- 2. SEARCH & FILTERING ---
+    function filterAndRenderGrades() {
+        const query = document.getElementById('gradeSearchInput').value.toLowerCase();
+
+        currentGrades = allGradesData.filter(g => {
+            const studentId = g.studentId ? g.studentId.toLowerCase() : '';
+            const studentName = g.studentName ? g.studentName.toLowerCase() : '';
+
+            return studentId.includes(query) || studentName.includes(query);
+        });
+
+        gradeCurrentPage = 0;
+        renderGradeTable();
+    }
+
+    // --- 3. RENDERING UI ---
+    function renderGradeTable() {
+        const tbody = document.getElementById('gradeTableBody');
+        const pagination = document.getElementById('gradePaginationControls');
+        tbody.innerHTML = "";
+
+        // CẬP NHẬT HEADER DỰA TRÊN CHẾ ĐỘ TRUNG BÌNH
+        const theadHtml = isAverageMode ? `
+            <tr class="text-secondary text-uppercase small">
+                <th class="ps-4">ID</th>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th>Average Score</th>
+                <th class="text-center">Rank</th>
+                <th class="text-end pe-4">Actions</th>
+            </tr>
+        ` : `
+            <tr class="text-secondary text-uppercase small">
+                <th class="ps-4">ID</th>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Score</th>
+                <th class="text-center">Rank</th>
+                <th class="text-end pe-4">Actions</th>
+            </tr>
+        `;
+        document.querySelector('#gradeTableBody').parentElement.querySelector('thead').innerHTML = theadHtml;
+
+
+        if (!currentGrades || currentGrades.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${isAverageMode ? 6 : 7}" class="text-center py-5 text-muted">No data found.</td></tr>`;
+            pagination.style.display = 'none';
+            return;
+        }
+
+        pagination.style.display = 'flex';
+        const start = gradeCurrentPage * GRADE_ITEMS_PER_PAGE;
+        const end = start + GRADE_ITEMS_PER_PAGE;
+        const pageData = currentGrades.slice(start, end);
+
+        pageData.forEach((g, index) => {
+            const scoreDisplay = g.score != null ?
+                `<span class="fw-bold ${g.score >= 90 ? 'text-success' : (g.score >= 80 ? 'text-info' : (g.score >= 60 ? 'text-dark' : 'text-danger'))}">${g.score}</span>` :
+                `<span class="badge bg-secondary text-white-50 fst-italic">Not Graded</span>`;
+
+            const rankDisplay = g.score != null ?
+                `<span class="fw-bold text-secondary">#${g.rank}</span>` :
+                `<span>-</span>`;
+
+            const actionButtons = `
+                <button ${g.score != null ? 'class="btn btn-sm btn-outline-primary"' : 'class="btn btn-sm btn-success"'}
+                        data-bs-toggle="modal" data-bs-target="#inputGradeModal" onclick="prepareEdit(this)"
+                        data-id="${g.id || ''}"
+                        data-student="${g.studentName || ''}"
+                        data-student-id="${g.studentId || ''}"
+                        data-class-id="${g.classId || ''}"
+                        data-subject-id="${g.courseId || ''}"
+                        data-score="${g.score || ''}">
+                    <i class="fas ${g.score != null ? 'fa-edit' : 'fa-plus'}"></i>
+                </button>`;
+
+            let row;
+
+            if (isAverageMode) {
+                // RENDER CHẾ ĐỘ B (AVERAGE)
+                row = `
+                    <tr>
+                        <td class="ps-4 text-muted">${g.studentId || 'N/A'}</td>
+                        <td class="fw-bold text-dark">${g.studentName || 'N/A'}</td>
+                        <td><span class="badge bg-primary text-white fst-italic">${g.className || 'N/A'}</span></td>
+                        <td>${scoreDisplay}</td>
+                        <td class="text-center">${rankDisplay}</td>
+                        <td class="text-end pe-4">${actionButtons}</td>
+                    </tr>`;
+            } else {
+                // RENDER CHẾ ĐỘ A (SPECIFIC SUBJECT) - NHƯ CŨ
+                row = `
+                    <tr>
+                        <td class="ps-4 text-muted">${g.studentId || 'N/A'}</td>
+                        <td class="fw-bold text-dark">${g.studentName || 'N/A'}</td>
+                        <td><span class="badge bg-light text-dark border">${g.className || 'N/A'}</span></td>
+                        <td>${g.courseName || 'N/A'}</td>
+                        <td>${scoreDisplay}</td>
+                        <td class="text-center">${rankDisplay}</td>
+                        <td class="text-end pe-4">${actionButtons}</td>
+                    </tr>`;
+            }
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        updateGradePaginationInfo(currentGrades.length);
+    }
+
+    // --- 4. PAGINATION CONTROLS ---
+
+    function updateGradePaginationInfo(total) {
+        const start = gradeCurrentPage * GRADE_ITEMS_PER_PAGE + 1;
+        let end = (gradeCurrentPage + 1) * GRADE_ITEMS_PER_PAGE;
+        if (end > total) end = total;
+
+        document.getElementById('gradePageInfo').innerText = `Showing ${start}-${end} of ${total} students`;
+        document.getElementById('btnGradePrev').disabled = (gradeCurrentPage === 0);
+        document.getElementById('btnGradeNext').disabled = (end >= total);
+    }
+
+    function prevGradePage() {
+        if (gradeCurrentPage > 0) {
+            gradeCurrentPage--;
+            renderGradeTable();
+        }
+    }
+
+    function nextGradePage() {
+        if (((gradeCurrentPage + 1) * GRADE_ITEMS_PER_PAGE) < currentGrades.length) {
+            gradeCurrentPage++;
+            renderGradeTable();
+        }
+    }
+
+    function goToLastGradePage() {
+        const totalItems = currentGrades.length;
+        if (totalItems === 0) return;
+
+        const lastPage = Math.ceil(totalItems / GRADE_ITEMS_PER_PAGE);
+        gradeCurrentPage = lastPage - 1; // 0-based
+        renderGradeTable();
+    }
+
+    // --- 5. MODAL LOGIC (Existing) ---
+
     function prepareEdit(button) {
         document.getElementById('modalTitle').innerText = button.getAttribute('data-score') ? 'Edit Grade' : 'Add Grade';
         document.getElementById('grade-id').value = button.getAttribute('data-id') || '';
